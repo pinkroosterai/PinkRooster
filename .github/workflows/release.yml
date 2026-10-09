@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: write
+      id-token: write # lets NuGet/login exchange GitHub's OIDC token for a short-lived API key
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+      - name: Check tag matches repository version
+        run: |
+          version=$(dotnet msbuild src/PinkRooster.Agents/PinkRooster.Agents.csproj -getProperty:Version)
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME does not match version $version"; exit 1; }
+      - run: dotnet build PinkRooster.slnx -c Release
+      - run: dotnet test --solution PinkRooster.slnx -c Release --no-build
+      - run: dotnet pack PinkRooster.slnx -c Release --no-build -o artifacts
+      - name: Check packages
+        shell: bash
+        run: |
+          version=$(dotnet msbuild src/PinkRooster.Agents/PinkRooster.Agents.csproj -getProperty:Version)
+          for id in PinkRooster.Agents PinkRooster.OpenAI.Reasoning PinkRooster.ToolCollections PinkRooster.ToolCollections.BuiltIn \
+            PinkRooster.ToolCollections.Mcp PinkRooster.SpectreConsole; do
+            for ext in nupkg snupkg; do
+              [ -f "artifacts/$id.$version.$ext" ] || { echo "Missing artifacts/$id.$version.$ext"; exit 1; }
+            done
+          done
+          count=$(ls artifacts/*.nupkg | wc -l)
+          [ "$count" -eq 6 ] || { echo "Expected 6 packages, found $count"; ls artifacts; exit 1; }
+      # Before the push to NuGet: a version there cannot be deleted, so nothing after the push may fail on the repository's own content.
+      - name: Cut the release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '/^## /{keep=($2==v); next} keep' CHANGELOG.md > release-notes.md
+          [ -s release-notes.md ] || { echo "CHANGELOG.md has no section for $version"; exit 1; }
+      # The key lives for one hour, so it is requested right before the push.
+      - name: NuGet login (OIDC to a short-lived API key)
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: PinkRoosterAi
+      - name: Push to NuGet
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" artifacts/*.nupkg artifacts/*.snupkg \
+            --title "$GITHUB_REF_NAME" --notes-file release-notes.md \
+            $(case "$GITHUB_REF_NAME" in *-*) echo --prerelease;; esac)

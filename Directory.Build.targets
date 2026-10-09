@@ -1,0 +1,11 @@
+<Project>
+
+    <!-- Sibling packages are versioned in lockstep, and are tested and released as one set, so a
+         packed ProjectReference depends on exactly this version ([x.y.z]) instead of NuGet's default of ">= x.y.z". -->
+    <Target Name="PinPinkRoosterSiblingVersions" AfterTargets="_GetProjectReferenceVersions" Condition="'$(IsPackable)' != 'false'">
+        <ItemGroup>
+            <_ProjectReferencesWithVersions Update="@(_ProjectReferencesWithVersions)" ProjectVersion="[$(Version)]"/>
+        </ItemGroup>
+    </Target>
+
+</Project>

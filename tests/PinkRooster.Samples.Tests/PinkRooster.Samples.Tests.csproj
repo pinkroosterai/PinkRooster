@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Spectre.Console.Testing" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples\PinkRooster.Samples.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.Reasoning\PinkRooster.Samples.Reasoning.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.Mcp\PinkRooster.Samples.Mcp.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.CodingAgent\PinkRooster.Samples.CodingAgent.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.OtherAgents\PinkRooster.Samples.OtherAgents.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.ExternalTools\PinkRooster.Samples.ExternalTools.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.SessionState\PinkRooster.Samples.SessionState.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.ToolCollections\PinkRooster.Samples.ToolCollections.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.SteppedAgents\PinkRooster.Samples.SteppedAgents.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.AgentClasses\PinkRooster.Samples.AgentClasses.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.MafPassthrough\PinkRooster.Samples.MafPassthrough.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.Middleware\PinkRooster.Samples.Middleware.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.Approvals\PinkRooster.Samples.Approvals.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.Events\PinkRooster.Samples.Events.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.Builder\PinkRooster.Samples.Builder.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.BackgroundTools\PinkRooster.Samples.BackgroundTools.csproj" />
+    <ProjectReference Include="..\..\samples\PinkRooster.Samples.Imaging\PinkRooster.Samples.Imaging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The shared fakes live in the Agents tests. -->
+    <Compile Include="..\PinkRooster.Agents.Tests\TestSupport\ScriptedChatClient.cs" Link="TestSupport\ScriptedChatClient.cs" />
+    <!-- The showcase's typing test runs AgentConsole on a test console with a keyboard a test can type on. -->
+    <Compile Include="..\PinkRooster.SpectreConsole.Tests\TestSupport\KeyedConsole.cs" Link="TestSupport\KeyedConsole.cs" />
+    <!-- A test loads the tracked example, so a broken edit to it fails the build's tests. -->
+    <None Include="..\..\samples\PinkRooster.Samples\models.example.json" Link="models.example.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

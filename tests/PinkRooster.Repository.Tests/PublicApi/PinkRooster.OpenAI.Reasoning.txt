@@ -1,0 +1,4 @@
+sealed class PinkRooster.OpenAI.Reasoning.ReasoningFieldChatClient : DelegatingChatClient
+    .ctor(IChatClient innerClient)
+    override GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions options = default, CancellationToken cancellationToken = default) : Task<ChatResponse>
+    override GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions options = default, CancellationToken cancellationToken = default) : IAsyncEnumerable<ChatResponseUpdate>

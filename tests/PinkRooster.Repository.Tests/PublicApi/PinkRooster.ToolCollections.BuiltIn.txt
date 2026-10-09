@@ -1,0 +1,186 @@
+sealed class PinkRooster.ToolCollections.BuiltIn.AskUserQuestion.AskUserQuestionToolCollection : ToolCollection
+    .ctor(Func<IReadOnlyList<UserQuestion>, CancellationToken, Task<IReadOnlyList<UserQuestionAnswer>>> askUser)
+    AskUserQuestion(UserQuestion[] questions, CancellationToken cancellationToken = default) : Task<String>
+    const MaxHeaderLength : Int32
+    const MaxOptions : Int32
+    const MaxQuestions : Int32
+    const MinOptions : Int32
+sealed class PinkRooster.ToolCollections.BuiltIn.AskUserQuestion.UserQuestion : IEquatable<UserQuestion>
+    .ctor(String Question, String Header, IReadOnlyList<UserQuestionOption> Options, Boolean MultiSelect = default)
+    Header : String { get; set; }
+    MultiSelect : Boolean { get; set; }
+    Options : IReadOnlyList<UserQuestionOption> { get; set; }
+    Question : String { get; set; }
+sealed class PinkRooster.ToolCollections.BuiltIn.AskUserQuestion.UserQuestionAnswer : IEquatable<UserQuestionAnswer>
+    .ctor(IReadOnlyList<String> SelectedLabels, String OtherText = default)
+    OtherText : String { get; set; }
+    SelectedLabels : IReadOnlyList<String> { get; set; }
+sealed class PinkRooster.ToolCollections.BuiltIn.AskUserQuestion.UserQuestionOption : IEquatable<UserQuestionOption>
+    .ctor(String Label, String Description)
+    Description : String { get; set; }
+    Label : String { get; set; }
+sealed class PinkRooster.ToolCollections.BuiltIn.DateTimes.DateTimeToolCollection : ToolCollection
+    .ctor()
+    .ctor(TimeProvider timeProvider, String defaultTimeZone = default)
+    GetDateTimeAfter(Int32 days = default, Int32 hours = default, Int32 minutes = default, String timeZoneId = default) : String
+    GetDayOfWeek(String date) : String
+    GetDaysBetween(String endDate, String startDate = default, String timeZoneId = default) : String
+    override GetContextAsync(CancellationToken cancellationToken) : ValueTask<String>
+sealed class PinkRooster.ToolCollections.BuiltIn.FileOperations.FileOperationsToolCollection : FileReadToolCollection
+    .ctor(Workspace workspace)
+    BeginUndoUnit(AgentSession session) : Void
+    CreateFile(String path, String content, CancellationToken cancellationToken = default) : Task<String>
+    DeleteFile(String path, CancellationToken cancellationToken = default) : Task<String>
+    EditFile(String path, String oldText, String newText, Boolean replaceAll = default, CancellationToken cancellationToken = default) : Task<String>
+    MoveFile(String sourcePath, String destinationPath, CancellationToken cancellationToken = default) : Task<String>
+    UndoAsync(AgentSession session, CancellationToken cancellationToken = default) : Task<FileUndoResult>
+    WriteFile(String path, String content, CancellationToken cancellationToken = default) : Task<String>
+sealed class PinkRooster.ToolCollections.BuiltIn.FileOperations.FileOperationsToolCollectionBuilder
+    .ctor()
+    Build() : FileOperationsToolCollection
+    InWorkspace(Workspace workspace) : FileOperationsToolCollectionBuilder
+    KeepBackups() : FileOperationsToolCollectionBuilder
+    WithMaxReadCharacters(Int32 maxReadCharacters) : FileOperationsToolCollectionBuilder
+class PinkRooster.ToolCollections.BuiltIn.FileOperations.FileReadToolCollection : ToolCollection
+    .ctor(Workspace workspace)
+    BaseDirectory : String { get; }
+    FindFiles(String pattern, String path = default, CancellationToken cancellationToken = default) : Task<String>
+    ListDirectory(String path = default, CancellationToken cancellationToken = default) : Task<String>
+    MaxReadCharacters : Int32 { get; }
+    ReadFile(String path, Int32? startLine = default, Int32? endLine = default, CancellationToken cancellationToken = default) : Task<String>
+    SearchFiles(String pattern, String path = default, String include = default, SearchMode mode = default, Boolean ignoreCase = default, Int32 limit = default, CancellationToken cancellationToken = default) : Task<String>
+    const DefaultMaxReadCharacters : Int32
+sealed class PinkRooster.ToolCollections.BuiltIn.FileOperations.FileReadToolCollectionBuilder
+    .ctor()
+    Build() : FileReadToolCollection
+    InWorkspace(Workspace workspace) : FileReadToolCollectionBuilder
+    WithMaxReadCharacters(Int32 maxReadCharacters) : FileReadToolCollectionBuilder
+sealed class PinkRooster.ToolCollections.BuiltIn.FileOperations.FileUndoEntry : IEquatable<FileUndoEntry>
+    .ctor(String Path, String Detail)
+    Detail : String { get; set; }
+    Path : String { get; set; }
+sealed class PinkRooster.ToolCollections.BuiltIn.FileOperations.FileUndoResult : IEquatable<FileUndoResult>
+    .ctor(IReadOnlyList<FileUndoEntry> Restored, IReadOnlyList<FileUndoEntry> Skipped)
+    NothingToUndo : Boolean { get; }
+    Restored : IReadOnlyList<FileUndoEntry> { get; set; }
+    Skipped : IReadOnlyList<FileUndoEntry> { get; set; }
+    override ToString() : String
+enum PinkRooster.ToolCollections.BuiltIn.FileOperations.SearchMode
+    Files
+    Lines
+    Counts
+class PinkRooster.ToolCollections.BuiltIn.Images.ImageToolCollection : ToolCollection
+    .ctor(Workspace workspace, IChatClient visionClient)
+    BaseDirectory : String { get; }
+    QueryImage(IReadOnlyList<String> paths, String question = default, CancellationToken cancellationToken = default) : Task<String>
+    const DefaultMaxImageBytes : Int32
+    const DefaultMaxImagesPerCall : Int32
+sealed class PinkRooster.ToolCollections.BuiltIn.Images.ImageToolCollectionBuilder
+    .ctor()
+    Build() : ImageToolCollection
+    InWorkspace(Workspace workspace) : ImageToolCollectionBuilder
+    WithMaxImageBytes(Int32 maxImageBytes) : ImageToolCollectionBuilder
+    WithMaxImagesPerCall(Int32 maxImagesPerCall) : ImageToolCollectionBuilder
+    WithTimeout(TimeSpan timeout) : ImageToolCollectionBuilder
+    WithVisionClient(IChatClient visionClient) : ImageToolCollectionBuilder
+sealed class PinkRooster.ToolCollections.BuiltIn.Shells.Shell : IEquatable<Shell>
+    .ctor(ShellDialect Dialect, String Executable, String Name = default, IReadOnlyList<String> Launcher = default)
+    Dialect : ShellDialect { get; set; }
+    DisplayName : String { get; }
+    Executable : String { get; set; }
+    Launcher : IReadOnlyList<String> { get; set; }
+    Name : String { get; set; }
+    static Bash : Shell { get; }
+    static Default : Shell { get; }
+    static PowerShell : Shell { get; }
+    static Sh : Shell { get; }
+    static WindowsPowerShell : Shell { get; }
+enum PinkRooster.ToolCollections.BuiltIn.Shells.ShellDialect
+    PowerShell
+    Posix
+sealed class PinkRooster.ToolCollections.BuiltIn.Shells.ShellToolCollection : ToolCollection
+    .ctor()
+    .ctor(Workspace workspace)
+    RunShell(String command, String workingDirectory = default, IReadOnlyList<String> outputFilters = default, Int32? timeoutSeconds = default, CancellationToken cancellationToken = default) : Task<String>
+    const MinOutputCharacters : Int32
+    static NonInteractiveEnvironment : IReadOnlyDictionary<String, String> { get; }
+sealed class PinkRooster.ToolCollections.BuiltIn.Shells.ShellToolCollectionBuilder
+    .ctor()
+    AllowPrefixes(params String[] prefixes) : ShellToolCollectionBuilder
+    Build() : ShellToolCollection
+    DenyPrefixes(params String[] prefixes) : ShellToolCollectionBuilder
+    InWorkspace(Workspace workspace) : ShellToolCollectionBuilder
+    SeparateStreams() : ShellToolCollectionBuilder
+    UseShell(Shell shell) : ShellToolCollectionBuilder
+    WithEnvironmentVariable(String name, String value) : ShellToolCollectionBuilder
+    WithMaxOutputCharacters(Int32 maxOutputCharacters) : ShellToolCollectionBuilder
+    WithMaxTimeout(TimeSpan maxTimeout) : ShellToolCollectionBuilder
+    WithTimeout(TimeSpan timeout) : ShellToolCollectionBuilder
+    WithoutInheritedEnvironment() : ShellToolCollectionBuilder
+interface PinkRooster.ToolCollections.BuiltIn.TaskLists.ITaskListStorage
+    abstract LoadAsync(CancellationToken cancellationToken) : ValueTask<TaskListSnapshot>
+    abstract SaveAsync(TaskListSnapshot snapshot, CancellationToken cancellationToken) : ValueTask
+sealed class PinkRooster.ToolCollections.BuiltIn.TaskLists.InMemoryTaskListStorage : ITaskListStorage
+    .ctor()
+    LoadAsync(CancellationToken cancellationToken) : ValueTask<TaskListSnapshot>
+    SaveAsync(TaskListSnapshot snapshot, CancellationToken cancellationToken) : ValueTask
+sealed class PinkRooster.ToolCollections.BuiltIn.TaskLists.JsonFileTaskListStorage : ITaskListStorage
+    .ctor(String path, ILogger logger = default)
+    LoadAsync(CancellationToken cancellationToken) : ValueTask<TaskListSnapshot>
+    SaveAsync(TaskListSnapshot snapshot, CancellationToken cancellationToken) : ValueTask
+sealed class PinkRooster.ToolCollections.BuiltIn.TaskLists.TaskAddInput : IEquatable<TaskAddInput>
+    .ctor(String Subject, String Description = default, String[] BlockedBy = default)
+    BlockedBy : String[] { get; set; }
+    Description : String { get; set; }
+    Subject : String { get; set; }
+sealed class PinkRooster.ToolCollections.BuiltIn.TaskLists.TaskItem
+    .ctor()
+    BlockedBy : List<Int32> { get; set; }
+    Clone() : TaskItem
+    Description : String { get; set; }
+    Id : Int32 { get; set; }
+    Status : TaskItemStatus { get; set; }
+    Subject : String { get; set; }
+enum PinkRooster.ToolCollections.BuiltIn.TaskLists.TaskItemStatus
+    Pending
+    InProgress
+    Completed
+sealed class PinkRooster.ToolCollections.BuiltIn.TaskLists.TaskListSnapshot
+    .ctor()
+    Clone() : TaskListSnapshot
+    Items : List<TaskItem> { get; set; }
+    NextId : Int32 { get; set; }
+sealed class PinkRooster.ToolCollections.BuiltIn.TaskLists.TaskListToolCollection : ToolCollection
+    .ctor()
+    .ctor(ITaskListStorage storage)
+    GetTasks(AgentSession session) : TaskListSnapshot
+    TaskAdd(TaskAddInput[] tasks, CancellationToken cancellationToken = default) : Task<String>
+    TaskGet(Int32[] ids = default, CancellationToken cancellationToken = default) : Task<String>
+    TaskRemove(Int32[] ids, CancellationToken cancellationToken = default) : Task<String>
+    TaskUpdate(TaskUpdateInput[] updates, CancellationToken cancellationToken = default) : Task<String>
+    override GetContextAsync(CancellationToken cancellationToken) : ValueTask<String>
+sealed class PinkRooster.ToolCollections.BuiltIn.TaskLists.TaskListToolCollectionBuilder
+    .ctor()
+    AllowMultipleInProgress() : TaskListToolCollectionBuilder
+    Build() : TaskListToolCollection
+    FormatContextWith(Func<TaskListSnapshot, String> formatter) : TaskListToolCollectionBuilder
+    PerSession() : TaskListToolCollectionBuilder
+    WithJsonFile(String path) : TaskListToolCollectionBuilder
+    WithLogger(ILogger logger) : TaskListToolCollectionBuilder
+    WithMaxSubjectLength(Int32 maxSubjectLength) : TaskListToolCollectionBuilder
+    WithMaxVisibleItems(Int32 maxVisibleItems) : TaskListToolCollectionBuilder
+    WithStorage(ITaskListStorage storage) : TaskListToolCollectionBuilder
+    WithoutContext() : TaskListToolCollectionBuilder
+sealed class PinkRooster.ToolCollections.BuiltIn.TaskLists.TaskUpdateInput : IEquatable<TaskUpdateInput>
+    .ctor(Int32 Id, TaskItemStatus? Status = default, String Subject = default, String Description = default, Int32[] AddBlockedBy = default, Int32[] RemoveBlockedBy = default)
+    AddBlockedBy : Int32[] { get; set; }
+    Description : String { get; set; }
+    Id : Int32 { get; set; }
+    RemoveBlockedBy : Int32[] { get; set; }
+    Status : TaskItemStatus? { get; set; }
+    Subject : String { get; set; }
+sealed class PinkRooster.ToolCollections.BuiltIn.Workspace
+    .ctor(String rootDirectory, IReadOnlyList<String> skippedDirectories = default)
+    RootDirectory : String { get; }
+    SkippedDirectories : IReadOnlyList<String> { get; }
+    static DefaultSkippedDirectories : IReadOnlyList<String> { get; }

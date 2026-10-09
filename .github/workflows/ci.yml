@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore PinkRooster.slnx
+      - name: Build
+        run: dotnet build PinkRooster.slnx -c Release --no-restore
+      - name: Test
+        run: dotnet test --solution PinkRooster.slnx -c Release --no-build
+      - name: Pack packages
+        run: dotnet pack PinkRooster.slnx -c Release --no-build --no-restore -o artifacts
+      - name: Check packages
+        shell: bash
+        run: |
+          version=$(dotnet msbuild src/PinkRooster.Agents/PinkRooster.Agents.csproj -getProperty:Version)
+          for id in PinkRooster.Agents PinkRooster.OpenAI.Reasoning PinkRooster.ToolCollections PinkRooster.ToolCollections.BuiltIn \
+            PinkRooster.ToolCollections.Mcp PinkRooster.SpectreConsole; do
+            for ext in nupkg snupkg; do
+              [ -f "artifacts/$id.$version.$ext" ] || { echo "Missing artifacts/$id.$version.$ext"; exit 1; }
+            done
+          done
+          count=$(ls artifacts/*.nupkg | wc -l)
+          [ "$count" -eq 6 ] || { echo "Expected 6 packages, found $count"; ls artifacts; exit 1; }

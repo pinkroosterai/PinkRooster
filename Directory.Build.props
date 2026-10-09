@@ -1,0 +1,36 @@
+<Project>
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <!-- Holds the style rules of .editorconfig in the build, so a break fails it like any other warning. -->
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
+
+    <!-- One version for every package in the repository; release.yml checks the tag against it. -->
+    <PropertyGroup>
+        <Version>0.4.0-preview.1</Version>
+        <Authors>Jan Versteeg</Authors>
+        <Copyright>Copyright (c) Jan Versteeg 2026</Copyright>
+        <PackageReleaseNotes>See https://github.com/pinkroosterai/PinkRooster/blob/main/CHANGELOG.md</PackageReleaseNotes>
+        <PackageProjectUrl>https://github.com/pinkroosterai/PinkRooster</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/pinkroosterai/PinkRooster</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageIcon>icon.png</PackageIcon>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <!-- On CI the PDBs carry repository paths instead of the build machine's, so SourceLink resolves and the build is deterministic. -->
+        <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all"/>
+        <None Include="$(MSBuildThisFileDirectory)assets\icon.png" Pack="true" PackagePath="/" Visible="false"/>
+    </ItemGroup>
+
+</Project>

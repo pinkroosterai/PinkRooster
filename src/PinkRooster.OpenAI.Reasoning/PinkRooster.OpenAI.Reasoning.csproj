@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- With ToolCollections.Mcp, one of the src projects allowed to know a provider SDK; NeutralityTests keeps OpenAI out of the rest. -->
+  <PropertyGroup>
+    <PackageId>PinkRooster.OpenAI.Reasoning</PackageId>
+    <Description>Reads the reasoning field that Ollama, Groq and other OpenAI-compatible servers send, which the Microsoft.Extensions.AI OpenAI adapter drops, and returns it as reasoning content.</Description>
+    <PackageTags>openai ollama groq reasoning microsoft-extensions-ai ichatclient ai-agents llm dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\PinkRooster.OpenAI.Reasoning.md" Pack="true" PackagePath="/README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+  </ItemGroup>
+
+</Project>

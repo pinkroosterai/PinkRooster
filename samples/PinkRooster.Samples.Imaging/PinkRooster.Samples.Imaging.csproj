@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PinkRooster.Samples\PinkRooster.Samples.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The two images the sample asks about; the folder next to the binary is the sample's workspace. -->
+    <None Include="images\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

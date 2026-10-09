@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- xUnit1051: ported tests call APIs without TestContext.Current.CancellationToken; kept as-is so their bodies match the old repo. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PinkRooster.ToolCollections\PinkRooster.ToolCollections.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The shared fakes live in the Agents tests. -->
+    <Compile Include="..\PinkRooster.Agents.Tests\TestSupport\ScriptedChatClient.cs" Link="TestSupport\ScriptedChatClient.cs" />
+    <Compile Include="..\PinkRooster.Agents.Tests\TestSupport\RecordingLogger.cs" Link="TestSupport\RecordingLogger.cs" />
+    <Compile Include="..\PinkRooster.Agents.Tests\TestSupport\RecordingLoggerFactory.cs" Link="TestSupport\RecordingLoggerFactory.cs" />
+  </ItemGroup>
+
+</Project>

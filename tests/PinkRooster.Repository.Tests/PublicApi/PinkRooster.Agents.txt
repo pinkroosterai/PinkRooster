@@ -1,0 +1,368 @@
+sealed class PinkRooster.Agents.AgentAllowBackgroundAttribute : Attribute
+    .ctor(params String[] toolNames)
+    ToolNames : String[] { get; }
+static class PinkRooster.Agents.AgentApprovalExtensions
+    static GetApprovalRequests(AgentResponse response) : IReadOnlyList<ToolApprovalRequestContent>
+    static RunStreamingWithApprovalsAsync(AIAgent agent, String message, AgentSession session, Func<FunctionCallContent, CancellationToken, Task<ApprovalAnswer>> answer, AgentRunOptions options = default, CancellationToken cancellationToken = default) : IAsyncEnumerable<AgentResponseUpdate>
+    static RunStreamingWithApprovalsAsync(AIAgent agent, String message, AgentSession session, Func<FunctionCallContent, CancellationToken, Task<Boolean>> approve, AgentRunOptions options = default, CancellationToken cancellationToken = default) : IAsyncEnumerable<AgentResponseUpdate>
+    static RunWithApprovalsAsync(AIAgent agent, IEnumerable<ChatMessage> messages, AgentSession session, Func<FunctionCallContent, CancellationToken, Task<ApprovalAnswer>> answer, AgentRunOptions options = default, CancellationToken cancellationToken = default) : Task<AgentResponse>
+    static RunWithApprovalsAsync(AIAgent agent, IEnumerable<ChatMessage> messages, AgentSession session, Func<FunctionCallContent, CancellationToken, Task<Boolean>> approve, AgentRunOptions options = default, CancellationToken cancellationToken = default) : Task<AgentResponse>
+    static RunWithApprovalsAsync(AIAgent agent, String message, AgentSession session, Func<FunctionCallContent, CancellationToken, Task<ApprovalAnswer>> answer, AgentRunOptions options = default, CancellationToken cancellationToken = default) : Task<AgentResponse>
+    static RunWithApprovalsAsync(AIAgent agent, String message, AgentSession session, Func<FunctionCallContent, CancellationToken, Task<Boolean>> approve, AgentRunOptions options = default, CancellationToken cancellationToken = default) : Task<AgentResponse>
+sealed class PinkRooster.Agents.AgentBackgroundAttribute : Attribute
+    .ctor(params String[] lines)
+    Lines : String[] { get; }
+sealed class PinkRooster.Agents.AgentBuilder
+    .ctor(IChatClient chatClient)
+    AllowBackground(params String[] toolNames) : AgentBuilder
+    Apply(Action<AgentBuilder> configure) : AgentBuilder
+    Build() : AIAgent
+    BuildOptions() : ChatClientAgentOptions
+    Clone() : AgentBuilder
+    ConfigureAgentOptions(Action<ChatClientAgentOptions> configure) : AgentBuilder
+    ConfigureBackground(Action<BackgroundOptions> configure) : AgentBuilder
+    ConfigureChatOptions(Action<ChatOptions> configure) : AgentBuilder
+    ConfigureClient(Action<ChatClientBuilder> configure) : AgentBuilder
+    ConfigureToolLoop(Action<FunctionInvokingChatClient> configure) : AgentBuilder
+    OnEvent(Action<AgentEvent> handler) : AgentBuilder
+    OnEvent<TEvent>(Action<TEvent> handler) : AgentBuilder
+    RequireApproval(params String[] toolNames) : AgentBuilder
+    Use(Func<AIAgent, IServiceProvider, AIAgent> agentFactory) : AgentBuilder
+    WithBackground(String background) : AgentBuilder
+    WithBrief(AgentBrief brief) : AgentBuilder
+    WithChatHistoryProvider(ChatHistoryProvider chatHistoryProvider) : AgentBuilder
+    WithConstraint(String constraint) : AgentBuilder
+    WithConstraints(IEnumerable<String> constraints) : AgentBuilder
+    WithContextProvider(AIContextProvider contextProvider) : AgentBuilder
+    WithDefaults(AgentDefaults defaults) : AgentBuilder
+    WithDescription(String description) : AgentBuilder
+    WithExample(String input, String output) : AgentBuilder
+    WithId(String id) : AgentBuilder
+    WithInbox() : AgentBuilder
+    WithInstruction(String instruction) : AgentBuilder
+    WithInstructions(IEnumerable<String> instructions) : AgentBuilder
+    WithLoggerFactory(ILoggerFactory loggerFactory) : AgentBuilder
+    WithName(String name) : AgentBuilder
+    WithObjective(String objective) : AgentBuilder
+    WithOutputFormat(String outputFormat) : AgentBuilder
+    WithRole(String role) : AgentBuilder
+    WithServices(IServiceProvider services) : AgentBuilder
+    WithSystemPrompt(String systemPrompt) : AgentBuilder
+    WithTool(AITool tool) : AgentBuilder
+    WithTool(Delegate method) : AgentBuilder
+    WithTool(Delegate method, String name, String description = default) : AgentBuilder
+    WithTools(IEnumerable<AITool> tools) : AgentBuilder
+    WithTools(params IEnumerable<ToolCollection> collections) : AgentBuilder
+    WithoutDefaults() : AgentBuilder
+static class PinkRooster.Agents.AgentBuilderChatClientExtensions
+    static CreateAgent(IChatClient chatClient) : AgentBuilder
+    static CreateAgent<TAgent>(IChatClient chatClient) : TAgent
+    static CreateAgent<TAgent>(IChatClient chatClient, Action<AgentBuilder> configure) : TAgent
+sealed class PinkRooster.Agents.AgentConstraintAttribute : Attribute
+    .ctor(params String[] constraints)
+    Constraints : String[] { get; }
+sealed class PinkRooster.Agents.AgentDescriptionAttribute : Attribute
+    .ctor(String description)
+    Description : String { get; }
+sealed class PinkRooster.Agents.AgentExampleAttribute : Attribute
+    .ctor(String input, String output)
+    Input : String { get; }
+    Output : String { get; }
+static class PinkRooster.Agents.AgentInboxExtensions
+    static HasInbox(AIAgent agent) : Boolean
+    static PostMessageAsync(AIAgent agent, AgentSession session, ChatMessage message, CancellationToken cancellationToken = default) : Task
+    static PostMessageAsync(AIAgent agent, AgentSession session, String message, CancellationToken cancellationToken = default) : Task
+    static TryPostMessageAsync(AIAgent agent, AgentSession session, ChatMessage message, CancellationToken cancellationToken = default) : Task<Boolean>
+    static TryPostMessageAsync(AIAgent agent, AgentSession session, String message, CancellationToken cancellationToken = default) : Task<Boolean>
+sealed class PinkRooster.Agents.AgentInstructionAttribute : Attribute
+    .ctor(params String[] instructions)
+    Instructions : String[] { get; }
+sealed class PinkRooster.Agents.AgentObjectiveAttribute : Attribute
+    .ctor(params String[] lines)
+    Lines : String[] { get; }
+sealed class PinkRooster.Agents.AgentOutputFormatAttribute : Attribute
+    .ctor(params String[] lines)
+    Lines : String[] { get; }
+sealed class PinkRooster.Agents.AgentRequireApprovalAttribute : Attribute
+    .ctor(params String[] toolNames)
+    ToolNames : String[] { get; }
+sealed class PinkRooster.Agents.AgentRoleAttribute : Attribute
+    .ctor(params String[] lines)
+    Lines : String[] { get; }
+sealed class PinkRooster.Agents.AgentToolLoopAttribute : Attribute
+    .ctor()
+    AllowConcurrentInvocation : Boolean { get; set; }
+    IncludeDetailedErrors : Boolean { get; set; }
+    MaximumConsecutiveErrorsPerRequest : Int32 { get; set; }
+    MaximumIterationsPerRequest : Int32 { get; set; }
+    TerminateOnUnknownCalls : Boolean { get; set; }
+sealed class PinkRooster.Agents.AgentToolsAttribute : Attribute
+    .ctor(params Type[] collections)
+    Collections : Type[] { get; }
+sealed class PinkRooster.Agents.AgentWithoutDefaultsAttribute : Attribute
+    .ctor()
+sealed class PinkRooster.Agents.Background.BackgroundOptions
+    .ctor()
+    DefaultWaitTimeout : TimeSpan { get; set; }
+    GracePeriod : TimeSpan { get; set; }
+    MaxResultCharacters : Int32 { get; set; }
+    MaxRunningTasks : Int32 { get; set; }
+    MaxWaitTimeout : TimeSpan { get; set; }
+    MaxWakes : Int32 { get; set; }
+    TaskTimeLimit : TimeSpan { get; set; }
+sealed class PinkRooster.Agents.Briefs.AgentBrief
+    .ctor(String role = default, String objective = default, String background = default, IEnumerable<String> instructions = default, IEnumerable<String> constraints = default, String outputFormat = default, IEnumerable<AgentExample> examples = default, String systemPrompt = default)
+    Background : String { get; }
+    Constraints : IReadOnlyList<String> { get; }
+    Examples : IReadOnlyList<AgentExample> { get; }
+    Instructions : IReadOnlyList<String> { get; }
+    Objective : String { get; }
+    OutputFormat : String { get; }
+    Role : String { get; }
+    Source : String { get; }
+    SystemPrompt : String { get; }
+sealed class PinkRooster.Agents.Briefs.AgentExample : IEquatable<AgentExample>
+    .ctor(String Input, String Output)
+    Input : String { get; set; }
+    Output : String { get; set; }
+abstract class PinkRooster.Agents.DeclaredAgent : AIAgent, IAsyncDisposable
+    AsAgentBuilder() : AgentBuilder
+    DisposeAsync() : ValueTask
+    InitializeAsync(CancellationToken cancellationToken = default) : Task
+    OnEvent(Action<AgentEvent> handler) : IDisposable
+    OnEvent<TEvent>(Action<TEvent> handler) : IDisposable
+    override Description : String { get; }
+    override GetService(Type serviceType, Object serviceKey = default) : Object
+    override IdCore : String { protected get; }
+    override Name : String { get; }
+    protected .ctor(IChatClient chatClient)
+    protected RunCoreAsync(IEnumerable<ChatMessage> messages, AgentSession session = default, AgentRunOptions options = default, CancellationToken cancellationToken = default) : Task<AgentResponse>
+    protected RunCoreStreamingAsync(IEnumerable<ChatMessage> messages, AgentSession session = default, AgentRunOptions options = default, CancellationToken cancellationToken = default) : IAsyncEnumerable<AgentResponseUpdate>
+    protected override CreateSessionCoreAsync(CancellationToken cancellationToken = default) : ValueTask<AgentSession>
+    protected override DeserializeSessionCoreAsync(JsonElement serializedState, JsonSerializerOptions jsonSerializerOptions = default, CancellationToken cancellationToken = default) : ValueTask<AgentSession>
+    protected override SerializeSessionCoreAsync(AgentSession session, JsonSerializerOptions jsonSerializerOptions = default, CancellationToken cancellationToken = default) : ValueTask<JsonElement>
+    protected virtual Configure(AgentBuilder agent) : Void
+    protected virtual GetContextAsync(CancellationToken cancellationToken) : ValueTask<String>
+    protected virtual OnEvent(AgentEvent item) : Void
+abstract class PinkRooster.Agents.Eventing.AgentEvent : IEquatable<AgentEvent>
+    AgentId : String { get; set; }
+    AgentName : String { get; set; }
+    ParentRunId : Guid? { get; set; }
+    RunId : Guid { get; set; }
+    Timestamp : DateTimeOffset { get; set; }
+    protected .ctor()
+static class PinkRooster.Agents.Eventing.AgentEvents
+    static Publish(AgentEvent item) : Boolean
+sealed class PinkRooster.Agents.Eventing.AssistantTextCompleted : AgentEvent, IEquatable<AssistantTextCompleted>
+    .ctor(String Text)
+    Text : String { get; set; }
+sealed class PinkRooster.Agents.Eventing.AssistantTextDelta : AgentEvent, IEquatable<AssistantTextDelta>
+    .ctor(String Text)
+    Text : String { get; set; }
+sealed class PinkRooster.Agents.Eventing.BackgroundTaskEnded : AgentEvent, IEquatable<BackgroundTaskEnded>
+    .ctor(Int32 TaskId, String ToolName, BackgroundTaskState State, Boolean DidNotStop, Object Result, Exception Error, TimeSpan Duration)
+    DidNotStop : Boolean { get; set; }
+    Duration : TimeSpan { get; set; }
+    Error : Exception { get; set; }
+    Result : Object { get; set; }
+    State : BackgroundTaskState { get; set; }
+    TaskId : Int32 { get; set; }
+    ToolName : String { get; set; }
+sealed class PinkRooster.Agents.Eventing.BackgroundTaskStarted : AgentEvent, IEquatable<BackgroundTaskStarted>
+    .ctor(Int32 TaskId, String ToolName, String CallId)
+    CallId : String { get; set; }
+    TaskId : Int32 { get; set; }
+    ToolName : String { get; set; }
+enum PinkRooster.Agents.Eventing.BackgroundTaskState
+    Running
+    Completed
+    Failed
+    Cancelled
+    TimedOut
+sealed class PinkRooster.Agents.Eventing.BackgroundWaitStarted : AgentEvent, IEquatable<BackgroundWaitStarted>
+    .ctor(IReadOnlyList<Int32> TaskIds)
+    TaskIds : IReadOnlyList<Int32> { get; set; }
+sealed class PinkRooster.Agents.Eventing.BackgroundWakeLimitReached : AgentEvent, IEquatable<BackgroundWakeLimitReached>
+    .ctor(Int32 Limit, IReadOnlyList<Int32> CancelledTaskIds)
+    CancelledTaskIds : IReadOnlyList<Int32> { get; set; }
+    Limit : Int32 { get; set; }
+sealed class PinkRooster.Agents.Eventing.ModelCallCompleted : AgentEvent, IEquatable<ModelCallCompleted>
+    .ctor(String ModelId, ChatFinishReason? FinishReason, UsageDetails Usage, TimeSpan Duration, Exception Error)
+    Duration : TimeSpan { get; set; }
+    Error : Exception { get; set; }
+    FinishReason : ChatFinishReason? { get; set; }
+    ModelId : String { get; set; }
+    Usage : UsageDetails { get; set; }
+sealed class PinkRooster.Agents.Eventing.ModelCallStarted : AgentEvent, IEquatable<ModelCallStarted>
+    .ctor()
+sealed class PinkRooster.Agents.Eventing.ReasoningCompleted : AgentEvent, IEquatable<ReasoningCompleted>
+    .ctor(String Text)
+    Text : String { get; set; }
+sealed class PinkRooster.Agents.Eventing.ReasoningDelta : AgentEvent, IEquatable<ReasoningDelta>
+    .ctor(String Text)
+    Text : String { get; set; }
+sealed class PinkRooster.Agents.Eventing.RunCompleted : AgentEvent, IEquatable<RunCompleted>
+    .ctor(RunOutcome Outcome, Exception Error = default, TimeSpan Duration = default, UsageDetails Usage = default)
+    Duration : TimeSpan { get; set; }
+    Error : Exception { get; set; }
+    Outcome : RunOutcome { get; set; }
+    Usage : UsageDetails { get; set; }
+enum PinkRooster.Agents.Eventing.RunOutcome
+    Succeeded
+    Failed
+    Cancelled
+    AwaitingApproval
+    Abandoned
+sealed class PinkRooster.Agents.Eventing.RunStarted : AgentEvent, IEquatable<RunStarted>
+    .ctor()
+sealed class PinkRooster.Agents.Eventing.StepChecked : AgentEvent, IEquatable<StepChecked>
+    .ctor(String Label, Boolean Passed, String Feedback)
+    Feedback : String { get; set; }
+    Label : String { get; set; }
+    Passed : Boolean { get; set; }
+sealed class PinkRooster.Agents.Eventing.StepStarted : AgentEvent, IEquatable<StepStarted>
+    .ctor(String Label, Boolean IsFinal)
+    IsFinal : Boolean { get; set; }
+    Label : String { get; set; }
+sealed class PinkRooster.Agents.Eventing.ToolApprovalRequested : AgentEvent, IEquatable<ToolApprovalRequested>
+    .ctor(String CallId, String Name, IReadOnlyDictionary<String, Object> Arguments)
+    Arguments : IReadOnlyDictionary<String, Object> { get; set; }
+    CallId : String { get; set; }
+    Name : String { get; set; }
+sealed class PinkRooster.Agents.Eventing.ToolCallCompleted : AgentEvent, IEquatable<ToolCallCompleted>
+    .ctor(String CallId, String Name, ToolCallStatus Status, Object Result, Exception Error, TimeSpan Duration)
+    CallId : String { get; set; }
+    Duration : TimeSpan { get; set; }
+    Error : Exception { get; set; }
+    Name : String { get; set; }
+    Result : Object { get; set; }
+    Status : ToolCallStatus { get; set; }
+sealed class PinkRooster.Agents.Eventing.ToolCallRequested : AgentEvent, IEquatable<ToolCallRequested>
+    .ctor(String CallId, String Name, IReadOnlyDictionary<String, Object> Arguments)
+    Arguments : IReadOnlyDictionary<String, Object> { get; set; }
+    CallId : String { get; set; }
+    Name : String { get; set; }
+sealed class PinkRooster.Agents.Eventing.ToolCallStarted : AgentEvent, IEquatable<ToolCallStarted>
+    .ctor(String CallId, String Name, IReadOnlyDictionary<String, Object> Arguments)
+    Arguments : IReadOnlyDictionary<String, Object> { get; set; }
+    CallId : String { get; set; }
+    Name : String { get; set; }
+enum PinkRooster.Agents.Eventing.ToolCallStatus
+    Succeeded
+    Failed
+    Rejected
+    Cancelled
+sealed class PinkRooster.Agents.Permissions.AllowRule : IEquatable<AllowRule>
+    Argument : String { get; }
+    Matches(FunctionCallContent call) : Boolean
+    Prefix : String { get; }
+    Tool : String { get; }
+    WholeText : String { get; }
+    override ToString() : String
+    static ForPrefix(String tool, String argument, String prefix) : AllowRule
+    static ForTool(String tool) : AllowRule
+    static ForWholeText(String tool, String argument, String text) : AllowRule
+struct PinkRooster.Agents.Permissions.ApprovalAnswer : IEquatable<ApprovalAnswer>
+    .ctor(Boolean Approved, String Reason = default)
+    Approved : Boolean { get; set; }
+    Reason : String { get; set; }
+    static Allow : ApprovalAnswer { get; }
+    static Refuse(String reason = default) : ApprovalAnswer
+enum PinkRooster.Agents.Permissions.ApprovalChoice
+    Skip
+    Allow
+    AllowForSession
+sealed class PinkRooster.Agents.Permissions.ApprovalQuestion : IEquatable<ApprovalQuestion>
+    .ctor(FunctionCallContent Call, AllowRule SessionRule = default)
+    Call : FunctionCallContent { get; set; }
+    SessionRule : AllowRule { get; set; }
+enum PinkRooster.Agents.Permissions.PermissionMode
+    Ask
+    AcceptEdits
+    Plan
+sealed class PinkRooster.Agents.Permissions.PermissionPolicy
+    .ctor(Func<ApprovalQuestion, CancellationToken, Task<ApprovalChoice>> ask)
+    Allow(params AllowRule[] allowRules) : PermissionPolicy
+    AnswerAsync(FunctionCallContent call, CancellationToken cancellationToken) : Task<ApprovalAnswer>
+    Mode : PermissionMode { get; set; }
+    Reset() : Void
+    Rules : IReadOnlyList<AllowRule> { get; }
+    SessionRules : IReadOnlyList<AllowRule> { get; }
+    WithCommandArgument(String tool, String argument) : PermissionPolicy
+    WithTools(IEnumerable<AITool> tools) : PermissionPolicy
+    WithTools(params ToolCollection[] collections) : PermissionPolicy
+sealed class PinkRooster.Agents.Prompts.AgentDefaults
+    .ctor(IEnumerable<String> instructions, IEnumerable<String> constraints)
+    Constraints : IReadOnlyList<String> { get; }
+    Instructions : IReadOnlyList<String> { get; }
+    static BuiltIn : AgentDefaults { get; }
+    static None : AgentDefaults { get; }
+sealed class PinkRooster.Agents.Sessions.RestoredSession : IEquatable<RestoredSession>
+    .ctor(AgentSession Session, SavedSession Saved, IReadOnlyList<String> MissingTools, IReadOnlyList<String> NewTools)
+    MissingTools : IReadOnlyList<String> { get; set; }
+    NewTools : IReadOnlyList<String> { get; set; }
+    SameTools : Boolean { get; }
+    Saved : SavedSession { get; set; }
+    Session : AgentSession { get; set; }
+sealed class PinkRooster.Agents.Sessions.SavedSession : IEquatable<SavedSession>
+    .ctor(String Id, String FirstPrompt, DateTimeOffset SavedAt, IReadOnlyList<String> Tools, String FilePath)
+    FilePath : String { get; set; }
+    FirstPrompt : String { get; set; }
+    Id : String { get; set; }
+    IsReadable : Boolean { get; }
+    Problem : String { get; set; }
+    SavedAt : DateTimeOffset { get; set; }
+    Tools : IReadOnlyList<String> { get; set; }
+sealed class PinkRooster.Agents.Sessions.SessionStore
+    .ctor(String directory, TimeProvider timeProvider = default)
+    Directory : String { get; }
+    List() : IReadOnlyList<SavedSession>
+    RestoreAsync(AIAgent agent, String id, CancellationToken cancellationToken = default) : Task<RestoredSession>
+    SaveAsync(AIAgent agent, AgentSession session, String prompt, CancellationToken cancellationToken = default) : Task<SavedSession>
+sealed class PinkRooster.Agents.Steps.NextStep
+    static Send(String label, String prompt, Boolean isFinal = default) : NextStep
+    static Send(String prompt) : NextStep
+    static Stop() : NextStep
+sealed class PinkRooster.Agents.Steps.StepContext
+    Checked(String label, Boolean passed, String feedback = default) : Void
+    Enter(String label, Boolean isFinal = default) : Void
+    GetState<T>() : T
+    Input : IReadOnlyList<ChatMessage> { get; }
+    LastReply : String { get; }
+    Request : String { get; }
+    Session : AgentSession { get; }
+    SetState<T>(T state) : Void
+    TryGetState<T>() : T
+    Turn : Int32 { get; }
+abstract class PinkRooster.Agents.Steps.SteppedAgent : DeclaredAgent
+    abstract MaxTurns : Int32 { protected get; }
+    protected .ctor(IChatClient chatClient)
+    protected abstract NextAsync(StepContext step, CancellationToken cancellationToken) : ValueTask<NextStep>
+    protected virtual StartAsync(StepContext step, CancellationToken cancellationToken) : ValueTask
+sealed class PinkRooster.Agents.SubAgents.SubAgentModel : IEquatable<SubAgentModel>
+    .ctor(String Name, String UseWhen, IChatClient ChatClient)
+    ChatClient : IChatClient { get; set; }
+    Name : String { get; set; }
+    UseWhen : String { get; set; }
+sealed class PinkRooster.Agents.SubAgents.SubAgentToolCollection : ToolCollection
+    .ctor(IEnumerable<SubAgentModel> models)
+    RunSubAgent(String modelName, String subAgentName, String role, String prompt, String[] instructions = default, String outputFormat = default, String[] toolSets = default, CancellationToken cancellationToken = default) : Task<String>
+    const DefaultMaxResultCharacters : Int32
+sealed class PinkRooster.Agents.SubAgents.SubAgentToolCollectionBuilder
+    .ctor()
+    ApproveToolCallsWith(Func<FunctionCallContent, CancellationToken, Task<ApprovalAnswer>> answerToolCall) : SubAgentToolCollectionBuilder
+    ApproveToolCallsWith(Func<FunctionCallContent, CancellationToken, Task<Boolean>> approveToolCall) : SubAgentToolCollectionBuilder
+    Build() : SubAgentToolCollection
+    ConfigureSubAgents(Action<AgentBuilder> configure) : SubAgentToolCollectionBuilder
+    WithLoggerFactory(ILoggerFactory loggerFactory) : SubAgentToolCollectionBuilder
+    WithMaxResultCharacters(Int32 maxResultCharacters) : SubAgentToolCollectionBuilder
+    WithModel(String name, String useWhen, IChatClient chatClient) : SubAgentToolCollectionBuilder
+    WithToolSet(String name, String useWhen, IEnumerable<AITool> tools) : SubAgentToolCollectionBuilder
+    WithToolSet(String name, String useWhen, params IEnumerable<ToolCollection> collections) : SubAgentToolCollectionBuilder
+    WithToolSet(SubAgentToolSet toolSet) : SubAgentToolCollectionBuilder
+sealed class PinkRooster.Agents.SubAgents.SubAgentToolSet : IEquatable<SubAgentToolSet>
+    .ctor(String Name, String UseWhen)
+    Collections : IReadOnlyList<ToolCollection> { get; set; }
+    Name : String { get; set; }
+    Tools : IReadOnlyList<AITool> { get; set; }
+    UseWhen : String { get; set; }

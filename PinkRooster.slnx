@@ -1,0 +1,39 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/PinkRooster.Samples/PinkRooster.Samples.csproj" />
+    <Project Path="samples/PinkRooster.Samples.Reasoning/PinkRooster.Samples.Reasoning.csproj" />
+    <Project Path="samples/PinkRooster.Samples.Mcp/PinkRooster.Samples.Mcp.csproj" />
+    <Project Path="samples/PinkRooster.Samples.CodingAgent/PinkRooster.Samples.CodingAgent.csproj" />
+    <Project Path="samples/PinkRooster.Samples.OtherAgents/PinkRooster.Samples.OtherAgents.csproj" />
+    <Project Path="samples/PinkRooster.Samples.ExternalTools/PinkRooster.Samples.ExternalTools.csproj" />
+    <Project Path="samples/PinkRooster.Samples.SessionState/PinkRooster.Samples.SessionState.csproj" />
+    <Project Path="samples/PinkRooster.Samples.ToolCollections/PinkRooster.Samples.ToolCollections.csproj" />
+    <Project Path="samples/PinkRooster.Samples.SteppedAgents/PinkRooster.Samples.SteppedAgents.csproj" />
+    <Project Path="samples/PinkRooster.Samples.AgentClasses/PinkRooster.Samples.AgentClasses.csproj" />
+    <Project Path="samples/PinkRooster.Samples.Imaging/PinkRooster.Samples.Imaging.csproj" />
+    <Project Path="samples/PinkRooster.Samples.MafPassthrough/PinkRooster.Samples.MafPassthrough.csproj" />
+    <Project Path="samples/PinkRooster.Samples.Middleware/PinkRooster.Samples.Middleware.csproj" />
+    <Project Path="samples/PinkRooster.Samples.Approvals/PinkRooster.Samples.Approvals.csproj" />
+    <Project Path="samples/PinkRooster.Samples.Events/PinkRooster.Samples.Events.csproj" />
+    <Project Path="samples/PinkRooster.Samples.BackgroundTools/PinkRooster.Samples.BackgroundTools.csproj" />
+    <Project Path="samples/PinkRooster.Samples.Builder/PinkRooster.Samples.Builder.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/PinkRooster.OpenAI.Reasoning/PinkRooster.OpenAI.Reasoning.csproj" />
+    <Project Path="src/PinkRooster.Agents/PinkRooster.Agents.csproj" />
+    <Project Path="src/PinkRooster.ToolCollections.BuiltIn/PinkRooster.ToolCollections.BuiltIn.csproj" />
+    <Project Path="src/PinkRooster.ToolCollections.Mcp/PinkRooster.ToolCollections.Mcp.csproj" />
+    <Project Path="src/PinkRooster.ToolCollections/PinkRooster.ToolCollections.csproj" />
+    <Project Path="src/PinkRooster.SpectreConsole/PinkRooster.SpectreConsole.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PinkRooster.OpenAI.Reasoning.Tests/PinkRooster.OpenAI.Reasoning.Tests.csproj" />
+    <Project Path="tests/PinkRooster.Agents.Tests/PinkRooster.Agents.Tests.csproj" />
+    <Project Path="tests/PinkRooster.Repository.Tests/PinkRooster.Repository.Tests.csproj" />
+    <Project Path="tests/PinkRooster.Samples.Tests/PinkRooster.Samples.Tests.csproj" />
+    <Project Path="tests/PinkRooster.ToolCollections.BuiltIn.Tests/PinkRooster.ToolCollections.BuiltIn.Tests.csproj" />
+    <Project Path="tests/PinkRooster.ToolCollections.Mcp.Tests/PinkRooster.ToolCollections.Mcp.Tests.csproj" />
+    <Project Path="tests/PinkRooster.ToolCollections.Tests/PinkRooster.ToolCollections.Tests.csproj" />
+    <Project Path="tests/PinkRooster.SpectreConsole.Tests/PinkRooster.SpectreConsole.Tests.csproj" />
+  </Folder>
+</Solution>

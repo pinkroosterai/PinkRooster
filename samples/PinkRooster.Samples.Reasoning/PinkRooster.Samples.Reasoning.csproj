@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PinkRooster.Samples\PinkRooster.Samples.csproj" />
+    <ProjectReference Include="..\..\src\PinkRooster.OpenAI.Reasoning\PinkRooster.OpenAI.Reasoning.csproj" />
+  </ItemGroup>
+
+</Project>

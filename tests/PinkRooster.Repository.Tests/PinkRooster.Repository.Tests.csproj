@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Checks that read the repository and span packages: the README quickstart and the dependency rules between packages. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- xUnit1051: ported tests call APIs without TestContext.Current.CancellationToken; kept as-is so their bodies match the old repo. -->
+    <NoWarn>$(NoWarn);xUnit1051;MAAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI.Harness" />
+    <PackageReference Include="Microsoft.Agents.AI.Workflows" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PinkRooster.Agents\PinkRooster.Agents.csproj" />
+    <ProjectReference Include="..\..\src\PinkRooster.ToolCollections.BuiltIn\PinkRooster.ToolCollections.BuiltIn.csproj" />
+    <!-- Every package a documented snippet uses, so DocSnippetTests can compile the snippets. -->
+    <ProjectReference Include="..\..\src\PinkRooster.ToolCollections.Mcp\PinkRooster.ToolCollections.Mcp.csproj" />
+    <ProjectReference Include="..\..\src\PinkRooster.OpenAI.Reasoning\PinkRooster.OpenAI.Reasoning.csproj" />
+    <ProjectReference Include="..\..\src\PinkRooster.SpectreConsole\PinkRooster.SpectreConsole.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\PinkRooster.Agents.Tests\TestSupport\ScriptedChatClient.cs" Link="TestSupport\ScriptedChatClient.cs" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,30 @@
+# .NET build outputs
+**/bin/
+**/obj/
+artifacts/
+TestResults/
+*.nupkg
+*.snupkg
+
+# IDE and user-specific files
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Local environment files
+.env*
+!.env.example
+
+# PinkRooster.Samples model list with keys; models.example.json is tracked instead
+samples/PinkRooster.Samples/models.json
+
+# Planning and assistant files: versioned in the private companion repo, never here.
+# Public docs are flat files in docs/; every folder under docs/ is a planning folder.
+docs/*/
+CLAUDE.md
+.claude/
+tasks/
+.internal.git/

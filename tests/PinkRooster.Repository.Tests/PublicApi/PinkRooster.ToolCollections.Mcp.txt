@@ -1,0 +1,25 @@
+sealed class PinkRooster.ToolCollections.Mcp.AgentMcpHttpToolsAttribute : ToolCollectionSourceAttribute
+    .ctor(String name, String endpoint)
+    ApiKeyEnvironmentVariable : String { get; set; }
+    Endpoint : String { get; }
+    HeaderName : String { get; set; }
+    Name : String { get; }
+    RequireApprovalForDestructiveTools : Boolean { get; set; }
+    override CreateAsync(CancellationToken cancellationToken) : ValueTask<ToolCollection>
+sealed class PinkRooster.ToolCollections.Mcp.AgentMcpStdioToolsAttribute : ToolCollectionSourceAttribute
+    .ctor(String name, String command, params String[] arguments)
+    Arguments : String[] { get; }
+    Command : String { get; }
+    Name : String { get; }
+    RequireApprovalForDestructiveTools : Boolean { get; set; }
+    WorkingDirectory : String { get; set; }
+    override CreateAsync(CancellationToken cancellationToken) : ValueTask<ToolCollection>
+sealed class PinkRooster.ToolCollections.Mcp.McpToolCollection : ExternalToolCollection<McpToolCollection>, IAsyncDisposable
+    Client : McpClient { get; }
+    DisposeAsync() : ValueTask
+    RequireApprovalForDestructiveTools() : McpToolCollection
+    override RenameHint(String toolName) : String
+    static ConnectAsync(String name, IClientTransport transport, Func<McpClientTool, McpClientTool> select = default, Boolean includeServerInstructions = default, McpClientOptions clientOptions = default, ILoggerFactory loggerFactory = default, CancellationToken cancellationToken = default) : Task<McpToolCollection>
+    static ConnectHttpAsync(String name, Uri endpoint, IReadOnlyDictionary<String, String> headers = default, HttpClient httpClient = default, Action<HttpClientTransportOptions> configure = default, Func<McpClientTool, McpClientTool> select = default, Boolean includeServerInstructions = default, McpClientOptions clientOptions = default, ILoggerFactory loggerFactory = default, CancellationToken cancellationToken = default) : Task<McpToolCollection>
+    static ConnectStdioAsync(String name, String command, IEnumerable<String> arguments = default, IReadOnlyDictionary<String, String> environment = default, Boolean inheritEnvironment = default, String workingDirectory = default, Action<String> standardError = default, Func<McpClientTool, McpClientTool> select = default, Boolean includeServerInstructions = default, McpClientOptions clientOptions = default, ILoggerFactory loggerFactory = default, CancellationToken cancellationToken = default) : Task<McpToolCollection>
+    static CreateAsync(String name, McpClient client, Func<McpClientTool, McpClientTool> select = default, Boolean includeServerInstructions = default, CancellationToken cancellationToken = default) : Task<McpToolCollection>

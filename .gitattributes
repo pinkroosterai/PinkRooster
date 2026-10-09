@@ -1,0 +1,2 @@
+# Text files are LF in the repository and in every checkout, so a string in a source file is the same on Windows and Linux.
+* text=auto eol=lf

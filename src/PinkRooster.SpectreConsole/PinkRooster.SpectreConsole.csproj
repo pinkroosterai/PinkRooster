@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The only src project allowed to reference Spectre.Console; NeutralityTests keeps it out of the rest. -->
+  <PropertyGroup>
+    <PackageId>PinkRooster.SpectreConsole</PackageId>
+    <Description>Shows an AI agent's run on a Spectre.Console terminal: reasoning, tool calls with their timing and the markdown answer as it streams, plus prompts to approve a tool call, answer the agent's question or type a line.</Description>
+    <PackageTags>spectre-console markdown console terminal streaming tool-approval ai-agents llm dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\PinkRooster.SpectreConsole.md" Pack="true" PackagePath="/README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NTokenizers.Extensions.Spectre.Console" />
+    <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PinkRooster.SpectreConsole.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PinkRooster.Agents\PinkRooster.Agents.csproj" />
+    <ProjectReference Include="..\PinkRooster.ToolCollections.BuiltIn\PinkRooster.ToolCollections.BuiltIn.csproj" />
+  </ItemGroup>
+
+</Project>

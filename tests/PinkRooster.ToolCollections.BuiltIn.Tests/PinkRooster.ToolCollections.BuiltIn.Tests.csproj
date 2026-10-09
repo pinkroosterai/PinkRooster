@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <!-- xUnit1051: ported tests call APIs without TestContext.Current.CancellationToken; kept as-is so their bodies match the old repo. -->
+    <NoWarn>$(NoWarn);xUnit1051</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PinkRooster.ToolCollections.BuiltIn\PinkRooster.ToolCollections.BuiltIn.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Undo keeps its record in the session, so its tests run the tools in a MAF agent on a scripted model. -->
+    <Compile Include="..\PinkRooster.Agents.Tests\TestSupport\ScriptedChatClient.cs" Link="TestSupport\ScriptedChatClient.cs" />
+  </ItemGroup>
+
+</Project>

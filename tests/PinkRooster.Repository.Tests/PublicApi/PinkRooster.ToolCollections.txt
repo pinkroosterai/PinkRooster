@@ -1,0 +1,66 @@
+sealed class PinkRooster.ToolCollections.Context.ToolCollectionChatClient : DelegatingChatClient
+    .ctor(IChatClient innerClient, IEnumerable<ToolCollection> collections, ILogger logger = default)
+    const FramingLine : String
+    const MarkerKey : String
+    override GetResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions options = default, CancellationToken cancellationToken = default) : Task<ChatResponse>
+    override GetStreamingResponseAsync(IEnumerable<ChatMessage> messages, ChatOptions options = default, CancellationToken cancellationToken = default) : IAsyncEnumerable<ChatResponseUpdate>
+static class PinkRooster.ToolCollections.Context.ToolCollectionChatClientBuilderExtensions
+    static UseToolCollections(ChatClientBuilder builder, params IEnumerable<ToolCollection> collections) : ChatClientBuilder
+sealed class PinkRooster.ToolCollections.Context.ToolCollectionContextProvider : AIContextProvider
+    .ctor(IEnumerable<ToolCollection> collections, ILogger logger)
+    .ctor(params IEnumerable<ToolCollection> collections)
+    protected override ProvideAIContextAsync(AIContextProvider.InvokingContext context, CancellationToken cancellationToken = default) : ValueTask<AIContext>
+    static ForContextOnly(IEnumerable<ToolCollection> collections, ILogger logger = default) : ToolCollectionContextProvider
+sealed class PinkRooster.ToolCollections.ExternalToolCollection : ExternalToolCollection<ExternalToolCollection>
+    .ctor(String name, IEnumerable<AIFunction> tools)
+abstract class PinkRooster.ToolCollections.ExternalToolCollection<TSelf> : ToolCollection
+    RequireApproval(params String[] toolNames) : TSelf
+    WithConstraint(String constraint) : TSelf
+    WithContext(Func<CancellationToken, ValueTask<String>> context) : TSelf
+    WithInstruction(String instruction) : TSelf
+    WithKind(ToolKind kind, params String[] toolNames) : TSelf
+    override DisplayName : String { get; }
+    override GetContextAsync(CancellationToken cancellationToken) : ValueTask<String>
+    protected .ctor(String name, IEnumerable<AIFunction> tools)
+class PinkRooster.ToolCollections.ToolAttribute : Attribute
+    .ctor()
+    .ctor(String description)
+    .ctor(String name, String description)
+    Description : String { get; set; }
+    Kind : ToolKind { get; set; }
+    Name : String { get; set; }
+    RequiresApproval : Boolean { get; set; }
+abstract class PinkRooster.ToolCollections.ToolCollection
+    Constraints : IReadOnlyList<String> { get; }
+    GetAIFunctions() : IReadOnlyList<AIFunction>
+    Instructions : IReadOnlyList<String> { get; }
+    protected .ctor()
+    protected AddConstraint(String constraint) : Void
+    protected AddInstruction(String instruction) : Void
+    protected AddTools(IEnumerable<AIFunction> tools) : Void
+    protected SessionState<T>(AgentSession session) : T
+    protected SessionState<T>(Func<T> create) : T
+    protected SetSessionState<T>(AgentSession session, T state) : Void
+    protected SetSessionState<T>(T state) : Void
+    static CreateTool(Delegate method) : AIFunction
+    static CreateTools(Object target) : IReadOnlyList<AIFunction>
+    virtual DisplayName : String { get; }
+    virtual GetContextAsync(CancellationToken cancellationToken) : ValueTask<String>
+    virtual RenameHint(String toolName) : String
+sealed class PinkRooster.ToolCollections.ToolCollectionConstraintAttribute : Attribute
+    .ctor(params String[] constraints)
+    Constraints : String[] { get; }
+sealed class PinkRooster.ToolCollections.ToolCollectionInstructionAttribute : Attribute
+    .ctor(params String[] instructions)
+    Instructions : String[] { get; }
+abstract class PinkRooster.ToolCollections.ToolCollectionSourceAttribute : Attribute
+    abstract CreateAsync(CancellationToken cancellationToken) : ValueTask<ToolCollection>
+    protected .ctor()
+enum PinkRooster.ToolCollections.ToolKind
+    None
+    Read
+    State
+    Edit
+    Execute
+static class PinkRooster.ToolCollections.ToolKindExtensions
+    static GetKind(AITool tool) : ToolKind

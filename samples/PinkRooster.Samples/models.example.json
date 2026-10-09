@@ -1,0 +1,12 @@
+{
+  // Copy the entries you want into models.json, next to this file, PinkRooster.Samples/models.json. models.json is git-ignored, so keys stay local.
+  "models": [
+    { "model": "qwen3.5:9b", "endpoint": "http://localhost:11434/v1", "apiKey": null },
+    { "model": "openai/gpt-oss-120b", "endpoint": "https://api.groq.com/openai/v1", "apiKey": "<your Groq key>" },
+    { "model": "<a model loaded in LM Studio>", "endpoint": "http://localhost:1234/v1", "apiKey": null },
+    // Some OpenAI reasoning models reject reasoning_effort alongside function tools on /v1/chat/completions;
+    // "api": "responses" calls /v1/responses instead, which allows both. The alternative fix is
+    // "reasoningEffort": "none", which drops the field and stays on /v1/chat/completions.
+    { "model": "<an OpenAI model>", "endpoint": "https://api.openai.com/v1", "apiKey": "<your OpenAI key>", "api": "responses" }
+  ]
+}

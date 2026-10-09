@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>PinkRooster.Agents</PackageId>
+    <Description>Fluent AgentBuilder for AI agents on the Microsoft Agent Framework (MAF): compose the system prompt from named sections, add tool collections and approvals, and watch runs through typed events. Returns a normal MAF AIAgent and works with any IChatClient.</Description>
+    <PackageTags>agents ai-agents agent-framework microsoft-agent-framework agentbuilder prompt-builder llm tool-calling dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- MAAI001: the step loop (SteppedAgent) runs on MAF's LoopAgent and its evaluators, which Microsoft.Agents.AI 1.24.0
+         marks experimental. Chosen on purpose; no experimental type appears in this project's public API (PublicApiTests checks it). -->
+    <NoWarn>$(NoWarn);MAAI001</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\PinkRooster.Agents.md" Pack="true" PackagePath="/README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The lower bound repeats the Microsoft.Agents.AI version in Directory.Packages.props; change both together. -->
+    <PackageReference Include="Microsoft.Agents.AI" VersionOverride="[1.24.0, 1.25.0)" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PinkRooster.ToolCollections\PinkRooster.ToolCollections.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PinkRooster.Agents.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,56 @@
+sealed class PinkRooster.SpectreConsole.AgentConsole : IAgentConsole
+    .ctor(IAnsiConsole console, AgentConsoleOptions options = default)
+    AskAsync(IReadOnlyList<UserQuestion> questions, CancellationToken cancellationToken) : Task<IReadOnlyList<UserQuestionAnswer>>
+    ConfirmToolCallAsync(ApprovalQuestion question, CancellationToken cancellationToken) : Task<ApprovalChoice>
+    IsInteractive : Boolean { get; }
+    ReadLineAsync(String prompt, CancellationToken cancellationToken) : Task<String>
+    Write(String text) : Void
+    WriteAnswer(String text) : Void
+    WriteEvent(AgentEvent item) : Void
+    WriteLine(String text = default) : Void
+static class PinkRooster.SpectreConsole.AgentConsoleExtensions
+    static ConfirmToolCallAsync(IAgentConsole console, FunctionCallContent call, CancellationToken cancellationToken) : Task<Boolean>
+    static RunToConsoleAsync(AIAgent agent, String prompt, AgentSession session = default, AgentRunOptions options = default, CancellationToken cancellationToken = default) : Task<AgentResponse>
+    static RunToConsoleAsync(AIAgent agent, String prompt, IAgentConsole console, AgentSession session = default, AgentRunOptions options = default, CancellationToken cancellationToken = default) : Task<AgentResponse>
+    static RunToConsoleAsync(AIAgent agent, String prompt, PermissionPolicy policy, AgentSession session = default, AgentRunOptions options = default, CancellationToken cancellationToken = default) : Task<AgentResponse>
+    static RunWithInputAsync(AIAgent agent, String prompt, IAgentConsole console, AgentSession session = default, ConsoleRunOptions options = default, CancellationToken cancellationToken = default) : Task<ConsoleRunResult>
+    static WithConsole(AgentBuilder builder, IAgentConsole console) : AgentBuilder
+    static WithConsole<TAgent>(TAgent agent, IAnsiConsole console, AgentConsoleOptions options = default) : TAgent
+sealed class PinkRooster.SpectreConsole.AgentConsoleOptions : IEquatable<AgentConsoleOptions>
+    .ctor()
+    Accent : String { get; set; }
+    Failure : String { get; set; }
+    Indent : String { get; set; }
+    MaxApprovalLines : Int32 { get; set; }
+    MaxLineLength : Int32 { get; set; }
+    MaxResultLines : Int32 { get; set; }
+    Muted : String { get; set; }
+    SensitiveValues : IReadOnlyCollection<String> { get; set; }
+    ShowNestedRuns : Boolean { get; set; }
+    Success : String { get; set; }
+static class PinkRooster.SpectreConsole.AnsiConsoleAnswerExtensions
+    static WriteAnswer(IAnsiConsole console, String answer) : Void
+static class PinkRooster.SpectreConsole.AnsiConsoleExtensions
+    static AskOrNullAsync(IAnsiConsole console, String prompt, CancellationToken cancellationToken = default, String style = default) : Task<String>
+    static CanRenderMarkdown(IAnsiConsole console) : Boolean
+sealed class PinkRooster.SpectreConsole.ConsoleRunOptions : IEquatable<ConsoleRunOptions>
+    .ctor()
+    HoldLine : Func<String, Boolean> { get; set; }
+    Policy : PermissionPolicy { get; set; }
+    RunOptions : AgentRunOptions { get; set; }
+sealed class PinkRooster.SpectreConsole.ConsoleRunResult : IEquatable<ConsoleRunResult>
+    .ctor(AgentResponse Response, AgentSession Session, Boolean Cancelled, IReadOnlyList<String> UnreadLines, String Draft)
+    Cancelled : Boolean { get; set; }
+    Draft : String { get; set; }
+    Response : AgentResponse { get; set; }
+    Session : AgentSession { get; set; }
+    UnreadLines : IReadOnlyList<String> { get; set; }
+interface PinkRooster.SpectreConsole.IAgentConsole
+    abstract AskAsync(IReadOnlyList<UserQuestion> questions, CancellationToken cancellationToken) : Task<IReadOnlyList<UserQuestionAnswer>>
+    abstract ConfirmToolCallAsync(ApprovalQuestion question, CancellationToken cancellationToken) : Task<ApprovalChoice>
+    abstract IsInteractive : Boolean { get; }
+    abstract ReadLineAsync(String prompt, CancellationToken cancellationToken) : Task<String>
+    abstract Write(String text) : Void
+    abstract WriteAnswer(String text) : Void
+    abstract WriteEvent(AgentEvent item) : Void
+    abstract WriteLine(String text = default) : Void

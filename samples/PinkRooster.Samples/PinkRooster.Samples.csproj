@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PinkRooster.Agents\PinkRooster.Agents.csproj" />
+    <ProjectReference Include="..\..\src\PinkRooster.ToolCollections.BuiltIn\PinkRooster.ToolCollections.BuiltIn.csproj" />
+    <ProjectReference Include="..\..\src\PinkRooster.SpectreConsole\PinkRooster.SpectreConsole.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
+    <PackageReference Include="Spectre.Console" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- models.json lives next to this project, whichever folder a sample starts in; it is git-ignored. -->
+    <AssemblyMetadata Include="ModelsFile" Value="$(MSBuildProjectDirectory)/models.json" />
+    <None Include="models.example.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

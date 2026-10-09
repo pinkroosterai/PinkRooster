@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>PinkRooster.ToolCollections</PackageId>
+    <Description>ToolCollection base class for AI agents on the Microsoft Agent Framework: a class whose [Tool] methods are the agent's tools, carrying its own instructions, constraints and live context that is sent before every model call without touching the chat history. Works with PinkRooster.Agents or any MAF agent.</Description>
+    <PackageTags>tools tool-calling function-calling ai-agents agent-framework microsoft-agent-framework microsoft-extensions-ai llm dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\docs\PinkRooster.ToolCollections.md" Pack="true" PackagePath="/README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI" />
+    <PackageReference Include="Microsoft.Extensions.AI" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PinkRooster.ToolCollections.Tests" />
+  </ItemGroup>
+
+</Project>
