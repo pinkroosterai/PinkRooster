@@ -11,7 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 
-[The idea](#the-idea) · [Quickstart](#quickstart) · [Packages](#packages) · [Samples](#samples) · [FAQ](#faq) · [Contributing](#feedback-contributing-and-license)
+[The idea](#the-idea) · [Quickstart](#quickstart) · [Packages](#packages) · [Samples](#samples) · [FAQ](#faq) · [Contributing](#feedback-contributing-security-and-license)
 
 </div>
 
@@ -125,7 +125,7 @@ dotnet pack PinkRooster.slnx -c Release -o artifacts
 
 The tests need no API key, model or server. The examples in the guides are compiled and run by the tests, so they do not go stale.
 
-## Feedback, contributing and license
+## Feedback, contributing, security and license
 
 Found a bug or missing something? [Open an issue](https://github.com/pinkroosterai/PinkRooster/issues). See [CONTRIBUTING.md](CONTRIBUTING.md) for
 development and pull requests, [SECURITY.md](SECURITY.md) for private vulnerability reporting, [CHANGELOG.md](CHANGELOG.md) for what changed, and
