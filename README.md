@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="PinkRooster logo" width="160" />
+<img src="assets/logo.svg" alt="PinkRooster logo" width="160" />
 
 # PinkRooster
 
