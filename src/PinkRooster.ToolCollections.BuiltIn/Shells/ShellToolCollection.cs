@@ -304,7 +304,7 @@ public sealed class ShellToolCollection : ToolCollection
         string[] filters = outputFilters?.Where(filter => !string.IsNullOrWhiteSpace(filter)).ToArray() ?? [];
         // Merged, both streams feed one capture, which keeps their lines in arrival order and saves a long output to a file;
         // the second capture then stays empty.
-        OutputSpill? spill = separateStreams ? null : new OutputSpill(workspace);
+        using OutputSpill? spill = separateStreams ? null : new OutputSpill(workspace);
         ShellOutputCapture stdout = new ShellOutputCapture(filters, maxOutputCharacters, spill);
         ShellOutputCapture stderr = separateStreams ? new ShellOutputCapture(filters, maxOutputCharacters) : stdout;
         Task readers = Task.WhenAll(
@@ -327,6 +327,11 @@ public sealed class ShellToolCollection : ToolCollection
         catch (OperationCanceledException) when (waitSource.IsCancellationRequested)
         {
             KillProcessTree(process, warnings);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                // Drain before disposing the spill and process streams; a caller's cancellation still releases every file.
+                await DrainAsync(readers).ConfigureAwait(false);
+            }
             cancellationToken.ThrowIfCancellationRequested();
             executionState = "TimedOut";
             notes.Add(effectiveTimeout < maxTimeout

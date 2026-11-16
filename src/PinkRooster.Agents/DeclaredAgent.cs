@@ -246,23 +246,14 @@ public abstract class DeclaredAgent : AIAgent, IAsyncDisposable
 
     private AIAgent BuildBlocking()
     {
-        try
-        {
-            return CreateBuilderBlocking(listenLive: true).Build();
-        }
-        catch (Exception error) when (error is not OperationCanceledException)
-        {
-            throw CouldNotBeBuilt(error);
-        }
+        return Task.Run(() => BuildAsync(CancellationToken.None).AsTask()).GetAwaiter().GetResult();
     }
 
     private async ValueTask<AIAgent> BuildAsync(CancellationToken cancellationToken)
     {
         try
         {
-            AgentBuilder builder = Begin(listenLive: true);
-            Complete(builder, await AgentClassCollections.CreateSourcedAsync(GetType(), cancellationToken).ConfigureAwait(false));
-            return builder.Build();
+            return await CompleteAsync(Begin(listenLive: true), builder => builder.Build(), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception error) when (error is not OperationCanceledException)
         {
@@ -285,10 +276,8 @@ public abstract class DeclaredAgent : AIAgent, IAsyncDisposable
     private AgentBuilder CreateBuilderBlocking(bool listenLive)
     {
         AgentBuilder builder = Begin(listenLive);
-        Type type = GetType();
         // The caller cannot await, so this waits for the connecting; the thread pool has no context to deadlock on.
-        Complete(builder, Task.Run(() => AgentClassCollections.CreateSourcedAsync(type, CancellationToken.None)).GetAwaiter().GetResult());
-        return builder;
+        return Task.Run(() => CompleteAsync(builder, ready => ready, CancellationToken.None).AsTask()).GetAwaiter().GetResult();
     }
 
     /// <summary>A builder holding what needs no connection: the name, the attributes, the class's own tools and the collections named by type.</summary>
@@ -319,22 +308,30 @@ public abstract class DeclaredAgent : AIAgent, IAsyncDisposable
         return builder;
     }
 
-    /// <summary>Adds the sourced collections, which the agent now owns, then what a base class sets up, <see cref="Configure"/> and the callbacks.</summary>
-    private void Complete(AgentBuilder builder, List<ToolCollection> created)
+    /// <summary>Owns sourced collections only after configuration and the requested build succeed; a failed attempt disposes its own resources.</summary>
+    private async ValueTask<T> CompleteAsync<T>(AgentBuilder builder, Func<AgentBuilder, T> finish, CancellationToken cancellationToken)
     {
-        if (created.Count > 0)
+        List<ToolCollection> created = await AgentClassCollections.CreateSourcedAsync(GetType(), cancellationToken).ConfigureAwait(false);
+        try
         {
+            builder.WithTools(created);
+            Prepare(builder);
+            Configure(builder);
+            foreach (Action<AgentBuilder> configure in builderCallbacks)
+            {
+                configure(builder);
+            }
+            T result = finish(builder);
             lock (sourced)
             {
                 sourced.AddRange(created);
             }
-            builder.WithTools(created);
+            return result;
         }
-        Prepare(builder);
-        Configure(builder);
-        foreach (Action<AgentBuilder> configure in builderCallbacks)
+        catch
         {
-            configure(builder);
+            await AgentClassCollections.DisposeAsync(created).ConfigureAwait(false);
+            throw;
         }
     }
 

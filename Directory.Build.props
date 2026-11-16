@@ -12,7 +12,7 @@
 
     <!-- One version for every package in the repository; release.yml checks the tag against it. -->
     <PropertyGroup>
-        <Version>0.4.0-preview.1</Version>
+        <Version>0.4.1-preview</Version>
         <Authors>Jan Versteeg</Authors>
         <Copyright>Copyright (c) Jan Versteeg 2026</Copyright>
         <PackageReleaseNotes>See https://github.com/pinkroosterai/PinkRooster/blob/main/CHANGELOG.md</PackageReleaseNotes>

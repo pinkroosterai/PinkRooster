@@ -183,6 +183,10 @@ public sealed class SessionStoreTests : IDisposable
     [InlineData("{ not json", "not valid JSON")]
     [InlineData("{\"id\":\"x\",\"firstPrompt\":\"hi\"}", "not a session this store wrote")]
     [InlineData("[1, 2, 3]", "not a session this store wrote")]
+    [InlineData("{\"firstPrompt\":\"hi\",\"savedAt\":42,\"tools\":[],\"session\":{}}", "not a session this store wrote")]
+    [InlineData("{\"firstPrompt\":\"hi\",\"savedAt\":null,\"tools\":[],\"session\":{}}", "not a session this store wrote")]
+    [InlineData("{\"firstPrompt\":\"hi\",\"savedAt\":\"2026-10-08T09:00:00Z\",\"tools\":[42],\"session\":{}}", "not a session this store wrote")]
+    [InlineData("{\"firstPrompt\":\"hi\",\"savedAt\":\"2026-10-08T09:00:00Z\",\"tools\":[null],\"session\":{}}", "not a session this store wrote")]
     public async Task AFileThatCannotBeRead_IsListedAsUnreadable_IsNotRestored_AndStaysOnDisk(string content, string problem)
     {
         CancellationToken none = TestContext.Current.CancellationToken;

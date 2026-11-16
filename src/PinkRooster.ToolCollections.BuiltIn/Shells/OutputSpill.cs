@@ -8,13 +8,14 @@ namespace PinkRooster.ToolCollections.BuiltIn.Shells;
 /// rest with the file tools. The folder holds its own <c>.gitignore</c>, and files older than a day, or beyond the newest
 /// twenty, are removed when a new one is made. Nothing here throws: a failure is kept in <see cref="Error" />.
 /// </summary>
-internal sealed class OutputSpill(Workspace workspace)
+internal sealed class OutputSpill(Workspace workspace) : IDisposable
 {
     private const int KeptFiles = 20;
     private static readonly TimeSpan MaxAge = TimeSpan.FromDays(1);
 
     private readonly object gate = new();
     private StreamWriter? writer;
+    private bool closed;
 
     /// <summary>Whether the file has been started.</summary>
     public bool IsOpen { get { lock (gate) { return writer is not null; } } }
@@ -38,7 +39,7 @@ internal sealed class OutputSpill(Workspace workspace)
 
     private void StartLocked(string text)
     {
-        if (writer is not null || Error is not null)
+        if (closed || writer is not null || Error is not null)
         {
             return;
         }
@@ -85,6 +86,11 @@ internal sealed class OutputSpill(Workspace workspace)
     {
         lock (gate)
         {
+            if (closed)
+            {
+                return;
+            }
+            closed = true;
             try
             {
                 writer?.Dispose();
@@ -101,6 +107,9 @@ internal sealed class OutputSpill(Workspace workspace)
             }
         }
     }
+
+    /// <summary>Closes the file on every exit path, including cancellation, keeping any partial output.</summary>
+    public void Dispose() => Close(keep: true);
 
     private void Fail(Exception ex)
     {

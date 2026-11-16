@@ -14,6 +14,44 @@ internal static class TextFile
     /// <summary>Reading: invalid bytes are an error instead of replacement characters.</summary>
     public static readonly Encoding StrictUtf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true, throwOnInvalidBytes: true);
 
+    /// <summary>Writes a replacement beside an existing file and commits it only after the complete write, keeping its permissions.</summary>
+    public static async Task ReplaceAsync(string path, string content, Encoding encoding, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if ((File.GetAttributes(path) & FileAttributes.ReadOnly) != 0)
+        {
+            throw new UnauthorizedAccessException($"File '{path}' is read-only.");
+        }
+
+        string draft = Path.Combine(Path.GetDirectoryName(path)!, $".pinkrooster-{Guid.NewGuid():N}.tmp");
+        FileStreamOptions options = new() { Mode = FileMode.CreateNew, Access = FileAccess.Write, Share = FileShare.None, Options = FileOptions.Asynchronous };
+        if (!OperatingSystem.IsWindows())
+        {
+            options.UnixCreateMode = File.GetUnixFileMode(path);
+        }
+        try
+        {
+            await using (FileStream stream = new(draft, options))
+            await using (StreamWriter writer = new(stream, encoding))
+            {
+                await writer.WriteAsync(content.AsMemory(), cancellationToken).ConfigureAwait(false);
+                await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
+            }
+            if (!OperatingSystem.IsWindows())
+            {
+                // UnixCreateMode is filtered by umask; keep the original mode exactly, including executable bits.
+                File.SetUnixFileMode(draft, options.UnixCreateMode!.Value);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            // A sibling is on the same volume. Replace also keeps the destination's ACL on Windows.
+            File.Replace(draft, path, destinationBackupFileName: null);
+        }
+        finally
+        {
+            File.Delete(draft);
+        }
+    }
+
     /// <summary>True when a NUL byte is in the first block, which marks a binary file before any of it is decoded.</summary>
     public static bool StartsWithBinaryContent(string filePath)
     {

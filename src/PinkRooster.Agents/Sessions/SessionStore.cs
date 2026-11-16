@@ -191,8 +191,9 @@ public sealed class SessionStore
             JsonElement root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object
                 || !root.TryGetProperty("firstPrompt", out JsonElement firstPrompt) || firstPrompt.ValueKind != JsonValueKind.String
-                || !root.TryGetProperty("savedAt", out JsonElement savedAt) || !savedAt.TryGetDateTimeOffset(out DateTimeOffset at)
+                || !root.TryGetProperty("savedAt", out JsonElement savedAt) || savedAt.ValueKind != JsonValueKind.String || !savedAt.TryGetDateTimeOffset(out DateTimeOffset at)
                 || !root.TryGetProperty("tools", out JsonElement tools) || tools.ValueKind != JsonValueKind.Array
+                || tools.EnumerateArray().Any(tool => tool.ValueKind != JsonValueKind.String)
                 || !root.TryGetProperty("session", out JsonElement saved))
             {
                 return Unreadable(id, path, "It is JSON, but not a session this store wrote.");

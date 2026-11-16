@@ -63,11 +63,10 @@ Console.WriteLine(response.Text);
   `RequireApprovalForDestructiveTools()`, to every tool the server does not mark read-only or
   non-destructive. The hints can only add approval, never remove it: a server you do not trust can
   mislabel a tool, so name its dangerous tools too.
-- **Kind.** A tool the server marks read-only has the [kind](https://github.com/pinkroosterai/PinkRooster/blob/main/docs/PinkRooster.ToolCollections.md#tool-kinds)
-  `Read`; every other tool has none, so a host that lets edits run unasked never runs a server's write
-  that way. `WithKind(ToolKind.Edit, "write_note")` gives a tool you know a kind yourself. A read-only
-  hint is the server's word: for a server you do not trust, take the kind away with
-  `WithKind(ToolKind.None, ...)`.
+- **Kind.** Server annotations never assign a [kind](https://github.com/pinkroosterai/PinkRooster/blob/main/docs/PinkRooster.ToolCollections.md#tool-kinds):
+  every MCP tool starts with `None`, including a tool the server calls read-only. Permission policies
+  can allow `Read` tools without asking, so assign a kind only to tools you trust, with
+  `WithKind(ToolKind.Read, "search")` or `WithKind(ToolKind.Edit, "write_note")`.
 - **Choosing and renaming.** The `select` argument sees each tool and returns it, a renamed copy
   (`tool.WithName("docs_search")`), or null to leave it out. Rename there when two servers share a tool
   name. A kept name that model providers reject, such as `files.read`, or two kept tools with one name,

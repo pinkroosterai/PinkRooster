@@ -10,6 +10,7 @@ using PinkRooster.Samples.CodingAgent.Project;
 using PinkRooster.ToolCollections;
 using PinkRooster.ToolCollections.BuiltIn;
 using PinkRooster.ToolCollections.BuiltIn.FileOperations;
+using PinkRooster.ToolCollections.Mcp;
 
 namespace PinkRooster.Samples.CodingAgent;
 
@@ -71,6 +72,8 @@ public sealed class CodingAssistant(
     {
         agent.WithName(nameof(CodingAssistant))
             .WithTools(tools)
+            // Every server tool reaches the host's policy; a server's safe hint cannot bypass it.
+            .RequireApproval([.. tools.OfType<McpToolCollection>().SelectMany(collection => collection.GetAIFunctions()).Select(tool => tool.Name)])
             // Below MAF's history, so a long conversation is shortened on its way to the model and saved whole.
             .ConfigureClient(client => client.Use(inner => new CompactingChatClient(inner, compaction)));
         if (skills is not null)

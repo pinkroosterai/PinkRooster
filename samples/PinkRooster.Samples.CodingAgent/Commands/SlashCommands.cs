@@ -170,7 +170,7 @@ public sealed class SlashCommands(CommandHost host)
             host.Console.WriteLine($"  {server.DisplayName}");
             foreach (AIFunction tool in server.GetAIFunctions())
             {
-                // A tool the server marks read-only runs unasked; every other one is put to the user, in every mode.
+                // Only a tool the host explicitly trusts as Read runs unasked; server hints do not assign a kind.
                 host.Console.WriteLine($"    {tool.Name}{(tool.GetKind() == ToolKind.Read ? "" : "  (asks first)")}");
             }
         }

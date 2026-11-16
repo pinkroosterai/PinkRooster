@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.1-preview
+
+- MCP server annotations no longer assign trusted tool kinds. Hosts can assign a kind explicitly with `WithKind` to tools they trust.
+- Background tools whose results cannot be serialized fail cleanly, and terminal tasks always signal completion so run cleanup can finish.
+- File edits and overwrites prepare a complete replacement before changing the destination, preserving its byte order mark and permissions. Cancellation and encoding failures leave the original intact.
+- Cancelling undo preserves the unprocessed changes for a later retry, including after saving and restoring the session.
+- Saved sessions with malformed field types are listed as unreadable without preventing other sessions from being listed.
+- Cancelled shell calls close their output files, and late output cannot reopen a closed file.
+- Failed agent initialization disposes the sourced collections created by that attempt before a retry.
+
 ## 0.4.0-preview.1
 
 The first public release. Six packages, released together at one version; each depends on its siblings at exactly this version.

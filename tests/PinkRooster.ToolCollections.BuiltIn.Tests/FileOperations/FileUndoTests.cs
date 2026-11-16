@@ -53,6 +53,29 @@ public sealed class FileUndoTests : IDisposable
     }
 
     [Fact]
+    public async Task CancellingUndoBeforeItStarts_LeavesTheUnitAvailableForRetry()
+    {
+        string path = Write("a.txt", "before");
+        FileOperationsToolCollection files = Collection();
+        AIAgent agent = Agent(files, Edit("a.txt", "before", "after"), Done());
+        AgentSession session = await agent.CreateSessionAsync(TestContext.Current.CancellationToken);
+        await SendAsync(agent, files, session);
+        using CancellationTokenSource cancelled = new();
+        cancelled.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => files.UndoAsync(session, cancelled.Token));
+        Assert.Equal("after", File.ReadAllText(path));
+
+        // Serialization makes this verify the durable history too, not just an object left in memory.
+        JsonElement saved = await agent.SerializeSessionAsync(session, cancellationToken: TestContext.Current.CancellationToken);
+        AgentSession restored = await agent.DeserializeSessionAsync(saved, cancellationToken: TestContext.Current.CancellationToken);
+        FileUndoResult result = await files.UndoAsync(restored, TestContext.Current.CancellationToken);
+        Assert.Single(result.Restored);
+        Assert.Empty(result.Skipped);
+        Assert.Equal("before", File.ReadAllText(path));
+    }
+
+    [Fact]
     public async Task AMessageThatEditsOneFile_CreatesOne_AndMovesOne_IsFullyTakenBack()
     {
         string edited = Write("src/a.txt", "one\ntwo\n");

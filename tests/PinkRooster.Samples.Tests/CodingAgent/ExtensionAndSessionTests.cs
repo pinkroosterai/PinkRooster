@@ -39,7 +39,7 @@ public sealed class ExtensionAndSessionTests
     }
 
     [Fact]
-    public async Task AnMcpServersTools_AreOffered_AndOneNotMarkedReadOnly_AsksInAcceptEdits()
+    public async Task AnMcpServersTools_AreOffered_AndServerHintsDoNotBypassApprovalInAcceptEdits()
     {
         await using InProcessMcpServer notes = await NotesServerAsync();
         using Showcase showcase = new();
@@ -50,13 +50,14 @@ public sealed class ExtensionAndSessionTests
         await showcase.RunAsync(model, "/mode accept-edits", "note it", "/mcp");
 
         Assert.Contains(model.Options[0]!.Tools!, tool => tool.Name == "search_notes");
-        // The read-only tool ran unasked. The other has no kind, so accept-edits does not let it through.
-        Assert.Equal(["save_note"], showcase.Console.ApprovalsAsked.Select(question => question.Call.Name));
+        // Both have no trusted kind, including the one the server calls read-only.
+        Assert.Equal(["search_notes", "save_note"], showcase.Console.ApprovalsAsked.Select(question => question.Call.Name));
         IReadOnlyList<(string Name, string Result)> results = Results(model);
         Assert.Contains("notes about tea", results[0].Result);
         Assert.Contains("saved green", results[1].Result);
         Assert.Contains("MCP servers: Notes.", showcase.Console.Output);
         Assert.Contains("save_note  (asks first)", showcase.Console.Output);
+        Assert.Contains("search_notes  (asks first)", showcase.Console.Output);
     }
 
     [Fact]

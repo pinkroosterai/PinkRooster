@@ -64,8 +64,8 @@ public sealed class McpToolCollection : ExternalToolCollection<McpToolCollection
         this.ownsClient = ownsClient;
         this.disposal = disposal;
 
-        // A tool the server marks read-only is read; any other tool gets no kind, so no host runs a server's write as an edit.
-        WithKind(ToolKind.Read, [.. tools.Where(tool => tool.ProtocolTool.Annotations is { ReadOnlyHint: true }).Select(tool => tool.Name)]);
+        // Server annotations are untrusted. Only the host can assign a kind with WithKind, because permission policies may
+        // allow a Read tool without asking, even when the host explicitly required approval for it.
     }
 
     /// <summary>The client the tools call the server through; use it for the server's resources and prompts.</summary>

@@ -20,6 +20,51 @@ public sealed class ShellOutputSpillTests : IDisposable
         new(new Workspace(root), TimeSpan.FromSeconds(20), maxOutputCharacters, separateStreams: separateStreams);
 
     [Fact]
+    public async Task CancellationAfterSpilling_ClosesTheOutputFile()
+    {
+        using CancellationTokenSource cancelled = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        string pause = OperatingSystem.IsWindows() ? "; Start-Sleep -Seconds 30" : "; sleep 30";
+        Task<string> run = Shell().RunShell(ShellCommands.NumberedLines(2000) + pause, cancellationToken: cancelled.Token);
+        try
+        {
+            using CancellationTokenSource limit = new(TimeSpan.FromSeconds(10));
+            while (!Directory.Exists(OutputDirectory) || Directory.GetFiles(OutputDirectory, "shell-*.txt").Length == 0)
+            {
+                await Task.Delay(10, limit.Token);
+            }
+        }
+        finally
+        {
+            await cancelled.CancelAsync();
+        }
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(TimeSpan.FromSeconds(10)));
+
+        string file = Assert.Single(Directory.GetFiles(OutputDirectory, "shell-*.txt"));
+        if (OperatingSystem.IsLinux())
+        {
+            Assert.DoesNotContain(Directory.GetFiles("/proc/self/fd"), descriptor => new FileInfo(descriptor).LinkTarget == file);
+        }
+        using FileStream exclusive = new(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        Assert.True(exclusive.Length > 0);
+    }
+
+    [Fact]
+    public void LateOutputAfterClosing_CannotReopenTheSpill()
+    {
+        using OutputSpill spill = new(new Workspace(root));
+        spill.Start("before");
+        string file = Assert.Single(Directory.GetFiles(OutputDirectory, "shell-*.txt"));
+        spill.Close(keep: true);
+
+        spill.Append("late");
+        spill.Start("later");
+
+        Assert.Equal("before", File.ReadAllText(file));
+        Assert.Single(Directory.GetFiles(OutputDirectory, "shell-*.txt"));
+        Assert.False(spill.IsOpen);
+    }
+
+    [Fact]
     public async Task OutputOverTheBudget_IsSavedInFullAndTheReplyNamesTheFile()
     {
         string result = await Shell().RunShell(ShellCommands.NumberedLines(2000));

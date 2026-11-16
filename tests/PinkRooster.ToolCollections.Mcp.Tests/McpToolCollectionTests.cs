@@ -6,6 +6,7 @@ using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using PinkRooster.Agents;
+using PinkRooster.Agents.Permissions;
 
 namespace PinkRooster.ToolCollections.Mcp.Tests;
 
@@ -94,7 +95,7 @@ public sealed class McpToolCollectionTests
     }
 
     [Fact]
-    public async Task AToolMarkedReadOnly_IsRead_AndEveryOtherToolHasNoKind()
+    public async Task ServerAnnotations_DoNotAssignTrustedKinds()
     {
         McpServerTool write = McpServerTool.Create(() => "written", new() { Name = "write" });
         McpServerTool append = McpServerTool.Create(() => "appended", new() { Name = "append", ReadOnly = false, Destructive = false });
@@ -103,7 +104,7 @@ public sealed class McpToolCollectionTests
         McpToolCollection tools = await McpToolCollection.CreateAsync("Files", server.Client, cancellationToken: TestContext.Current.CancellationToken);
 
         Dictionary<string, ToolKind> kinds = tools.GetAIFunctions().ToDictionary(function => function.Name, function => function.GetKind());
-        Assert.Equal(ToolKind.Read, kinds["search"]);
+        Assert.Equal(ToolKind.None, kinds["search"]);
         Assert.Equal(ToolKind.None, kinds["delete"]);
         Assert.Equal(ToolKind.None, kinds["write"]);
         Assert.Equal(ToolKind.None, kinds["append"]);
@@ -115,6 +116,7 @@ public sealed class McpToolCollectionTests
         await using InProcessMcpServer server = InProcessMcpServer.Start(InProcessMcpServer.Serving(null, Search(), Delete()));
 
         await using McpToolCollection tools = (await McpToolCollection.ConnectAsync("Files", server.Transport, tool => tool.WithName($"files_{tool.Name}"), cancellationToken: TestContext.Current.CancellationToken))
+            .WithKind(ToolKind.Read, "files_search")
             .RequireApproval("files_search");
 
         AIFunction search = tools.GetAIFunctions().Single(function => function.Name == "files_search");
@@ -123,6 +125,30 @@ public sealed class McpToolCollectionTests
         Assert.Equal(ToolKind.None, tools.GetAIFunctions().Single(function => function.Name == "files_delete").GetKind());
         object? result = await search.InvokeAsync(new AIFunctionArguments { ["query"] = "cats" }, TestContext.Current.CancellationToken);
         Assert.Contains("results for cats", result?.ToString());
+    }
+
+    [Theory]
+    [InlineData(PermissionMode.Ask, 1)]
+    [InlineData(PermissionMode.AcceptEdits, 1)]
+    [InlineData(PermissionMode.Plan, 0)]
+    public async Task AServerClaimingReadOnly_CannotBypassExplicitApproval(PermissionMode mode, int expectedQuestions)
+    {
+        await using InProcessMcpServer server = await InProcessMcpServer.StartAsync(InProcessMcpServer.Serving(null, Search()));
+        McpToolCollection tools = (await McpToolCollection.CreateAsync("Untrusted", server.Client, cancellationToken: TestContext.Current.CancellationToken))
+            .RequireApproval("search");
+        int questions = 0;
+        PermissionPolicy policy = new PermissionPolicy((_, _) =>
+        {
+            questions++;
+            return Task.FromResult(ApprovalChoice.Skip);
+        }).WithTools(tools);
+        policy.Mode = mode;
+        Assert.IsType<ApprovalRequiredAIFunction>(Assert.Single(tools.GetAIFunctions()));
+
+        ApprovalAnswer answer = await policy.AnswerAsync(new FunctionCallContent("call", "search", new Dictionary<string, object?> { ["query"] = "cats" }), TestContext.Current.CancellationToken);
+
+        Assert.False(answer.Approved);
+        Assert.Equal(expectedQuestions, questions);
     }
 
     [Fact]

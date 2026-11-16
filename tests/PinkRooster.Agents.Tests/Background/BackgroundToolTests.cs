@@ -65,6 +65,42 @@ public sealed class BackgroundToolTests
         public string Deploy() => "deployed";
     }
 
+    private sealed class CyclicResult
+    {
+        public CyclicResult Self => this;
+    }
+
+    private sealed class CyclicFunction : AIFunction
+    {
+        public override string Name => "Cyclic";
+
+        public override JsonElement JsonSchema => JsonSerializer.SerializeToElement(new { type = "object", properties = new { } });
+
+        protected override ValueTask<object?> InvokeCoreAsync(AIFunctionArguments arguments, CancellationToken cancellationToken) =>
+            ValueTask.FromResult<object?>(new CyclicResult());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task AnUnserializableBackgroundResult_FailsTheTask_AndTheRunCanFinish(bool streaming)
+    {
+        ScriptedChatClient model = new(Call("Cyclic", InBackground), Wait(1), Result(1), Text("done"));
+        ConcurrentQueue<AgentEvent> events = [];
+        AIAgent agent = model.CreateAgent().WithRole("r").WithTool(new CyclicFunction()).AllowBackground("Cyclic").OnEvent(events.Enqueue).Build();
+        AgentSession session = await agent.CreateSessionAsync(TestContext.Current.CancellationToken);
+
+        Task run = streaming ? Drain(agent.RunStreamingAsync("go", session)) : agent.RunAsync("go", session);
+        await run.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+
+        Assert.Contains("failed", Answer(model, 2));
+        Assert.Contains("failed", Answer(model, 3));
+        BackgroundTaskEnded ended = Assert.Single(events.OfType<BackgroundTaskEnded>());
+        Assert.Equal(BackgroundTaskState.Failed, ended.State);
+        Assert.IsType<JsonException>(ended.Error);
+        Assert.False(agent.GetService<BackgroundRunAgent>()!.Find(session)!.IsRunning);
+    }
+
     [Fact]
     public async Task OptedInTool_KeepsItsKind_AlsoWhenItNeedsApproval()
     {

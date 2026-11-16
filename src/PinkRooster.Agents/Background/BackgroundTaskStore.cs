@@ -457,6 +457,9 @@ internal sealed class BackgroundTaskStore
 
     private async Task FinishAsync(BackgroundTask task, BackgroundTaskState status, object? result, Exception? error, bool didNotStop)
     {
+        // Serialization can fail for a custom function's result. Leave the task running until it succeeds, so RunAsync can
+        // turn that exception into a failed task rather than leaving a terminal task whose Ended signal never completes.
+        string? resultText = status == BackgroundTaskState.Completed ? AsText(result) : null;
         lock (gate)
         {
             if (task.Status != BackgroundTaskState.Running)
@@ -466,51 +469,57 @@ internal sealed class BackgroundTaskStore
             task.StopClock();
             task.Status = status;
             task.Result = result;
-            task.ResultText = status == BackgroundTaskState.Completed ? AsText(result) : null;
+            task.ResultText = resultText;
             task.Error = error;
             task.DidNotStop = didNotStop;
         }
-        // Drops the time limit's timer; the task can no longer time out.
-        task.Cancellation.CancelAfter(Timeout.InfiniteTimeSpan);
-        if (error is not null)
+        try
         {
-            // In the foreground the tool loop would log this; here nothing else sees the exception.
-            logger?.LogError(error, "Background task {TaskId} ({ToolName}) failed.", task.Id, task.ToolName);
-        }
-        task.Scope?.Publish(() => new BackgroundTaskEnded(task.Id, task.ToolName, status, didNotStop, result, error, task.Duration));
+            // Drops the time limit's timer; the task can no longer time out.
+            task.Cancellation.CancelAfter(Timeout.InfiniteTimeSpan);
+            if (error is not null)
+            {
+                // In the foreground the tool loop would log this; here nothing else sees the exception.
+                logger?.LogError(error, "Background task {TaskId} ({ToolName}) failed.", task.Id, task.ToolName);
+            }
+            task.Scope?.Publish(() => new BackgroundTaskEnded(task.Id, task.ToolName, status, didNotStop, result, error, task.Duration));
 
-        ChatMessage? update = null;
-        bool hold;
-        lock (gate)
-        {
-            // A tool's answer that already told the model, or a waiting WaitForTasks call that will, leaves nothing to post; nor does a closing run.
-            if (!task.Told && task.Waiters == 0 && !closing)
+            ChatMessage? update = null;
+            bool hold;
+            lock (gate)
             {
-                task.Told = true;
-                update = new ChatMessage(ChatRole.User, task.UpdateText()) { AuthorName = UpdateAuthor };
+                // A tool's answer that already told the model, or a waiting WaitForTasks call that will, leaves nothing to post; nor does a closing run.
+                if (!task.Told && task.Waiters == 0 && !closing)
+                {
+                    task.Told = true;
+                    update = new ChatMessage(ChatRole.User, task.UpdateText()) { AuthorName = UpdateAuthor };
+                }
+                hold = paused;
+                if (update is not null && hold)
+                {
+                    heldUpdates.Add(update);
+                }
             }
-            hold = paused;
-            if (update is not null && hold)
-            {
-                heldUpdates.Add(update);
-            }
-        }
 
-        if (update is not null && !hold)
-        {
-            try
+            if (update is not null && !hold)
             {
-                await PostAsync(update, fromHost: false).ConfigureAwait(false);
-            }
-            catch (Exception postError)
-            {
-                // The result is still there for GetTaskResult and ListTasks; only the telling was lost.
-                logger?.LogWarning(postError, "The update for background task {TaskId} ({ToolName}) could not be posted.", task.Id, task.ToolName);
+                try
+                {
+                    await PostAsync(update, fromHost: false).ConfigureAwait(false);
+                }
+                catch (Exception postError)
+                {
+                    // The result is still there for GetTaskResult and ListTasks; only the telling was lost.
+                    logger?.LogWarning(postError, "The update for background task {TaskId} ({ToolName}) could not be posted.", task.Id, task.ToolName);
+                }
             }
         }
-        // Signalled last, so whoever waited on the task finds its event delivered and its update posted.
-        task.SignalEnded();
-        Signal(fromHost: false);
+        finally
+        {
+            // Signalled last, even if notification fails, so a terminal task can never keep cleanup waiting forever.
+            task.SignalEnded();
+            Signal(fromHost: false);
+        }
     }
 
     private void Signal(bool fromHost)

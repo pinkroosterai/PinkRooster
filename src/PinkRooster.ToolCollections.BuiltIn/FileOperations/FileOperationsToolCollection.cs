@@ -131,7 +131,7 @@ public sealed class FileOperationsToolCollection : FileReadToolCollection
             }
 
             // The file keeps the byte order mark it had
-            await File.WriteAllTextAsync(canonicalPath, content, TextFile.EncodingToWrite(canonicalPath), cancellationToken).ConfigureAwait(false);
+            await TextFile.ReplaceAsync(canonicalPath, content, TextFile.EncodingToWrite(canonicalPath), cancellationToken).ConfigureAwait(false);
             Record(FileChangeKind.Changed, canonicalPath, copy);
             int bytesWritten = Encoding.UTF8.GetByteCount(content);
             return $"File overwritten successfully: '{path}' ({bytesWritten} bytes).{backup}";
@@ -205,7 +205,7 @@ public sealed class FileOperationsToolCollection : FileReadToolCollection
                 return backupError!;
             }
 
-            await File.WriteAllTextAsync(canonicalPath, edit.Content, hasByteOrderMark ? TextFile.Utf8WithBom : TextFile.Utf8, cancellationToken).ConfigureAwait(false);
+            await TextFile.ReplaceAsync(canonicalPath, edit.Content, hasByteOrderMark ? TextFile.Utf8WithBom : TextFile.Utf8, cancellationToken).ConfigureAwait(false);
             Record(FileChangeKind.Changed, canonicalPath, copy);
 
             if (edit.MatchLines.Count > 1)
@@ -376,6 +376,7 @@ public sealed class FileOperationsToolCollection : FileReadToolCollection
     public async Task<FileUndoResult> UndoAsync(AgentSession session, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(session);
+        cancellationToken.ThrowIfCancellationRequested();
         if (!keepBackups)
         {
             throw new InvalidOperationException(
@@ -391,11 +392,9 @@ public sealed class FileOperationsToolCollection : FileReadToolCollection
                 return new FileUndoResult([], []);
             }
 
-            // The changes leave the record before they are taken back: a file that is skipped is not tried again by the next undo.
+            // Take a snapshot, but keep entries until processed: cancellation must leave the remaining changes available.
             int last = log.Changes.Max(change => change.Unit);
             unit = [.. log.Changes.Where(change => change.Unit == last)];
-            log.Changes.RemoveAll(change => change.Unit == last);
-            SetSessionState(session, log);
         }
 
         // Newest first, so a file changed twice goes back through its states in order. A file that could not be taken back one step
@@ -427,6 +426,13 @@ public sealed class FileOperationsToolCollection : FileReadToolCollection
             else
             {
                 skipped.TryAdd(change.Path, problem);
+            }
+            lock (session.StateBag)
+            {
+                FileChangeLog log = SessionState<FileChangeLog>(session)!;
+                // A skipped change is consumed too, as before; only an unprocessed change survives cancellation.
+                log.Changes.Remove(change);
+                SetSessionState(session, log);
             }
         }
 

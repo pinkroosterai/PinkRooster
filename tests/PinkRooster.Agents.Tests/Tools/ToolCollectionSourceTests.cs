@@ -51,6 +51,67 @@ public sealed class ToolCollectionSourceTests
     [FailingSource]
     private sealed class Failing(IChatClient chatClient) : DeclaredAgent(chatClient);
 
+    [TrackedSource("Attempt")]
+    private sealed class FailedBuild(IChatClient chatClient) : DeclaredAgent(chatClient)
+    {
+        public bool ThrowInConfigure { get; set; }
+
+        public bool SetRole { get; set; }
+
+        protected override void Configure(AgentBuilder agent)
+        {
+            if (ThrowInConfigure)
+            {
+                throw new InvalidOperationException("configuration failed");
+            }
+            if (SetRole)
+            {
+                agent.WithRole("r");
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task FailedConfigurationOrBuild_DisposesEachAttemptsCollections_AndCanRetry(bool blocking, bool throwInConfigure)
+    {
+        Tracked.Disposed.Clear();
+        FailedBuild agent = new(Client()) { ThrowInConfigure = throwInConfigure };
+        for (int i = 0; i < 2; i++)
+        {
+            if (blocking)
+            {
+                Assert.Throws<InvalidOperationException>(() => agent.GetService<ChatClientAgent>());
+            }
+            else
+            {
+                await Assert.ThrowsAsync<InvalidOperationException>(() => agent.InitializeAsync(TestContext.Current.CancellationToken));
+            }
+            Assert.Equal(i + 1, Tracked.Disposed.Count);
+        }
+
+        agent.ThrowInConfigure = false;
+        agent.SetRole = true;
+        await agent.InitializeAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(2, Tracked.Disposed.Count);
+        await agent.DisposeAsync();
+        Assert.Equal(["Attempt", "Attempt", "Attempt"], Tracked.Disposed);
+    }
+
+    [Fact]
+    public async Task AsAgentBuilder_WhenConfigurationFails_DisposesThatAttemptsCollections()
+    {
+        Tracked.Disposed.Clear();
+        await using FailedBuild agent = new(Client()) { ThrowInConfigure = true };
+
+        Assert.Throws<InvalidOperationException>(() => agent.AsAgentBuilder());
+
+        Assert.Equal(["Attempt"], Tracked.Disposed);
+    }
+
     // Connects only when the test says so, and records the token it was given.
     [AttributeUsage(AttributeTargets.Class)]
     private sealed class GatedSourceAttribute : ToolCollectionSourceAttribute
