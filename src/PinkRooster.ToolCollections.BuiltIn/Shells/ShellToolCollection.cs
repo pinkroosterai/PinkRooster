@@ -331,6 +331,8 @@ public sealed class ShellToolCollection : ToolCollection
             {
                 // Drain before disposing the spill and process streams; a caller's cancellation still releases every file.
                 await DrainAsync(readers).ConfigureAwait(false);
+                // No reply will name a partial output file, so nothing would ever read it.
+                spill?.Close(keep: false);
             }
             cancellationToken.ThrowIfCancellationRequested();
             executionState = "TimedOut";

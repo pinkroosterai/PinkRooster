@@ -482,7 +482,15 @@ internal sealed class BackgroundTaskStore
                 // In the foreground the tool loop would log this; here nothing else sees the exception.
                 logger?.LogError(error, "Background task {TaskId} ({ToolName}) failed.", task.Id, task.ToolName);
             }
-            task.Scope?.Publish(() => new BackgroundTaskEnded(task.Id, task.ToolName, status, didNotStop, result, error, task.Duration));
+            try
+            {
+                task.Scope?.Publish(() => new BackgroundTaskEnded(task.Id, task.ToolName, status, didNotStop, result, error, task.Duration));
+            }
+            catch (Exception handlerError)
+            {
+                // A host's handler must not keep the model from hearing that the task ended.
+                logger?.LogWarning(handlerError, "An event handler failed on the end of background task {TaskId} ({ToolName}).", task.Id, task.ToolName);
+            }
 
             ChatMessage? update = null;
             bool hold;

@@ -86,6 +86,33 @@ public sealed class AtomicFileWriteTests : IDisposable
         }
     }
 
+    [Fact]
+    public async Task AWritableFileInADirectoryTheAgentCannotWriteTo_IsRewrittenInPlace()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        string directory = Path.Combine(temp.Path, "locked");
+        Directory.CreateDirectory(directory);
+        string path = Path.Combine(directory, "file.txt");
+        File.WriteAllText(path, "original text");
+        File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserExecute);
+        try
+        {
+            FileOperationsToolCollection files = new(new Workspace(directory));
+            string result = await files.WriteFile("file.txt", "new", TestContext.Current.CancellationToken);
+
+            Assert.DoesNotContain("Error:", result);
+            Assert.Equal("new", File.ReadAllText(path));
+            Assert.Equal(["file.txt"], Directory.GetFiles(directory).Select(Path.GetFileName));
+        }
+        finally
+        {
+            File.SetUnixFileMode(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+    }
+
     private sealed class CancellingEncoding(Action cancel) : UTF8Encoding(false)
     {
         public override Encoder GetEncoder() => new CancellingEncoder(base.GetEncoder(), cancel);

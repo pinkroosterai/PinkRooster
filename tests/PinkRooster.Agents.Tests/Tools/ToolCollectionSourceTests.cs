@@ -112,6 +112,102 @@ public sealed class ToolCollectionSourceTests
         Assert.Equal(["Attempt"], Tracked.Disposed);
     }
 
+    private sealed class NamedTracked : ExternalToolCollection<NamedTracked>, IAsyncDisposable
+    {
+        public NamedTracked() : base("Named", [AIFunctionFactory.Create(() => "named", "Named", "A tool.")])
+        {
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            lock (Tracked.Disposed)
+            {
+                Tracked.Disposed.Add("Named");
+            }
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class DisposeFails : ExternalToolCollection<DisposeFails>, IAsyncDisposable
+    {
+        public DisposeFails() : base("DisposeFails", [AIFunctionFactory.Create(() => "x", "DisposeFails", "A tool.")])
+        {
+        }
+
+        public ValueTask DisposeAsync() => throw new IOException("dispose failed");
+    }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    private sealed class DisposeFailsSourceAttribute : ToolCollectionSourceAttribute
+    {
+        public override ValueTask<ToolCollection> CreateAsync(CancellationToken cancellationToken) => ValueTask.FromResult<ToolCollection>(new DisposeFails());
+    }
+
+    [AgentTools(typeof(NamedTracked))]
+    [TrackedSource("Attempt")]
+    private sealed class FailedWithNamed(IChatClient chatClient) : DeclaredAgent(chatClient)
+    {
+        protected override void Configure(AgentBuilder agent) => throw new InvalidOperationException("configuration failed");
+    }
+
+    [DisposeFailsSource]
+    [TrackedSource("After")]
+    private sealed class FailedWithBadDispose(IChatClient chatClient) : DeclaredAgent(chatClient)
+    {
+        protected override void Configure(AgentBuilder agent) => throw new InvalidOperationException("configuration failed");
+    }
+
+    [AgentRole("r")]
+    private sealed class ThreadRecording(IChatClient chatClient) : DeclaredAgent(chatClient)
+    {
+        public int ConfiguredOn { get; private set; }
+
+        protected override void Configure(AgentBuilder agent) => ConfiguredOn = Environment.CurrentManagedThreadId;
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedBuild_DisposesTheCollectionsNamedByType_AsWellAsTheSourcedOnes(bool blocking)
+    {
+        Tracked.Disposed.Clear();
+        await using FailedWithNamed agent = new(Client());
+        if (blocking)
+        {
+            Assert.Throws<InvalidOperationException>(() => agent.GetService<ChatClientAgent>());
+        }
+        else
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => agent.InitializeAsync(TestContext.Current.CancellationToken));
+        }
+
+        Assert.Equal(["Attempt", "Named"], Tracked.Disposed.Order());
+    }
+
+    [Fact]
+    public async Task FailedBuild_WhoseCleanupAlsoFails_KeepsTheOriginalError_AndDisposesTheRest()
+    {
+        Tracked.Disposed.Clear();
+        FailedWithBadDispose agent = new(Client());
+
+        InvalidOperationException error = await Assert.ThrowsAsync<InvalidOperationException>(() => agent.InitializeAsync(TestContext.Current.CancellationToken));
+
+        AggregateException both = Assert.IsType<AggregateException>(error.InnerException);
+        Assert.Contains(both.InnerExceptions, inner => inner.Message == "configuration failed");
+        Assert.Contains(both.InnerExceptions, inner => inner.Message == "dispose failed");
+        Assert.Equal(["After"], Tracked.Disposed);
+    }
+
+    [Fact]
+    public void BlockingBuild_RunsConfigureOnTheCallingThread()
+    {
+        ThreadRecording agent = new(Client());
+
+        agent.GetService<ChatClientAgent>();
+
+        Assert.Equal(Environment.CurrentManagedThreadId, agent.ConfiguredOn);
+    }
+
     // Connects only when the test says so, and records the token it was given.
     [AttributeUsage(AttributeTargets.Class)]
     private sealed class GatedSourceAttribute : ToolCollectionSourceAttribute

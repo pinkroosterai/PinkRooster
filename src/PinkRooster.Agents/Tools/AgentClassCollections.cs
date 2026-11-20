@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using PinkRooster.Agents.Shared;
 using PinkRooster.ToolCollections;
 
@@ -48,28 +49,62 @@ internal static class AgentClassCollections
                 }
             }
         }
-        catch
+        catch (Exception failure)
         {
-            await DisposeAsync(collections).ConfigureAwait(false);
+            await DisposeAfterFailureAsync(collections, failure).ConfigureAwait(false);
             throw;
         }
         return collections;
     }
 
-    /// <summary>Disposes each collection that can be disposed.</summary>
+    /// <summary>Disposes what a failed attempt created without hiding why it failed: a disposal error is thrown together with the failure.</summary>
+    /// <remarks>A cancellation stays a cancellation; a disposal error then is dropped.</remarks>
+    public static async ValueTask DisposeAfterFailureAsync(IEnumerable<ToolCollection> collections, Exception failure)
+    {
+        try
+        {
+            await DisposeAsync(collections).ConfigureAwait(false);
+        }
+        catch (Exception disposeError) when (failure is not OperationCanceledException)
+        {
+            throw new AggregateException(failure, disposeError);
+        }
+        catch (Exception) when (failure is OperationCanceledException)
+        {
+            // The caller rethrows the cancellation.
+        }
+    }
+
+    /// <summary>Disposes each collection that can be disposed, all of them even when one throws; the errors are thrown after.</summary>
     public static async ValueTask DisposeAsync(IEnumerable<ToolCollection> collections)
     {
+        List<Exception>? errors = null;
         foreach (ToolCollection collection in collections)
         {
-            switch (collection)
+            try
             {
-                case IAsyncDisposable asyncDisposable:
-                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
-                    break;
-                case IDisposable disposable:
-                    disposable.Dispose();
-                    break;
+                switch (collection)
+                {
+                    case IAsyncDisposable asyncDisposable:
+                        await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                        break;
+                    case IDisposable disposable:
+                        disposable.Dispose();
+                        break;
+                }
             }
+            catch (Exception error)
+            {
+                (errors ??= []).Add(error);
+            }
+        }
+        if (errors is [Exception only])
+        {
+            ExceptionDispatchInfo.Throw(only);
+        }
+        if (errors is not null)
+        {
+            throw new AggregateException(errors);
         }
     }
 

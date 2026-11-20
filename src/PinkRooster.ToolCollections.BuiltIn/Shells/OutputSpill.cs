@@ -108,7 +108,7 @@ internal sealed class OutputSpill(Workspace workspace) : IDisposable
         }
     }
 
-    /// <summary>Closes the file on every exit path, including cancellation, keeping any partial output.</summary>
+    /// <summary>Closes the file on every exit path; a file not already closed with a decision is kept.</summary>
     public void Dispose() => Close(keep: true);
 
     private void Fail(Exception ex)

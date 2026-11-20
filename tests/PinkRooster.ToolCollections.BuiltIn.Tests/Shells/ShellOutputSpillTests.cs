@@ -20,7 +20,7 @@ public sealed class ShellOutputSpillTests : IDisposable
         new(new Workspace(root), TimeSpan.FromSeconds(20), maxOutputCharacters, separateStreams: separateStreams);
 
     [Fact]
-    public async Task CancellationAfterSpilling_ClosesTheOutputFile()
+    public async Task CancellationAfterSpilling_RemovesTheOutputFile()
     {
         using CancellationTokenSource cancelled = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         string pause = OperatingSystem.IsWindows() ? "; Start-Sleep -Seconds 30" : "; sleep 30";
@@ -39,13 +39,11 @@ public sealed class ShellOutputSpillTests : IDisposable
         }
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => run.WaitAsync(TimeSpan.FromSeconds(10)));
 
-        string file = Assert.Single(Directory.GetFiles(OutputDirectory, "shell-*.txt"));
+        Assert.Empty(Directory.GetFiles(OutputDirectory, "shell-*.txt"));
         if (OperatingSystem.IsLinux())
         {
-            Assert.DoesNotContain(Directory.GetFiles("/proc/self/fd"), descriptor => new FileInfo(descriptor).LinkTarget == file);
+            Assert.DoesNotContain(Directory.GetFiles("/proc/self/fd"), descriptor => new FileInfo(descriptor).LinkTarget?.StartsWith(OutputDirectory, StringComparison.Ordinal) == true);
         }
-        using FileStream exclusive = new(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-        Assert.True(exclusive.Length > 0);
     }
 
     [Fact]

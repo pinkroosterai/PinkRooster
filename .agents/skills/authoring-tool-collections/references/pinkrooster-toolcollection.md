@@ -86,7 +86,7 @@ Prompt instructions are not a substitute for host approval.
 
 `[Tool(..., Kind = ToolKind.Read)]` stores the kind in the generated function's `AdditionalProperties`; `tool.GetKind()` reads it, also through `ApprovalRequiredAIFunction` and any other `DelegatingAIFunction`. The values are `Read`, `State`, `Edit`, `Execute`, and `None` for a tool that declares nothing.
 
-A function added with `AddTools(...)` has no kind. `ExternalToolCollection.WithKind(kind, names)` gives the named tools one; an MCP collection does that itself for the tools its server marks read-only.
+A function added with `AddTools(...)` has no kind. `ExternalToolCollection.WithKind(kind, names)` gives the named tools one; MCP tools start with no kind, even those their server marks read-only, so a host gives the tools it trusts a kind with `WithKind`.
 
 The kind enforces nothing. It is what the host's approval logic reads, so a wrong `Read` is a tool that may run unasked.
 

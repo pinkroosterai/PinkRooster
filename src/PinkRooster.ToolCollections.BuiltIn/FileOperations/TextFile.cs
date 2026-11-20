@@ -14,42 +14,47 @@ internal static class TextFile
     /// <summary>Reading: invalid bytes are an error instead of replacement characters.</summary>
     public static readonly Encoding StrictUtf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true, throwOnInvalidBytes: true);
 
-    /// <summary>Writes a replacement beside an existing file and commits it only after the complete write, keeping its permissions.</summary>
+    /// <summary>
+    /// Encodes the whole replacement first, then rewrites the existing file in place, so the file keeps what it is: its owner,
+    /// permissions, hard links and access rules. A file that cannot be opened for writing is refused by the system.
+    /// </summary>
+    /// <remarks>
+    /// Cancellation and encoding failures happen before the file is opened and leave it unchanged. Once writing starts it is not
+    /// cancelled, so a cancellation never leaves the file half written.
+    /// </remarks>
     public static async Task ReplaceAsync(string path, string content, Encoding encoding, CancellationToken cancellationToken)
     {
+        byte[] bytes = Encode(content, encoding, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
-        if ((File.GetAttributes(path) & FileAttributes.ReadOnly) != 0)
-        {
-            throw new UnauthorizedAccessException($"File '{path}' is read-only.");
-        }
+        FileStreamOptions options = new() { Mode = FileMode.Open, Access = FileAccess.Write, Share = FileShare.None, Options = FileOptions.Asynchronous };
+        await using FileStream stream = new(path, options);
+        // Writing over the old bytes before cutting the rest leaves no moment where the file is empty.
+        await stream.WriteAsync(bytes, CancellationToken.None).ConfigureAwait(false);
+        stream.SetLength(bytes.Length);
+        await stream.FlushAsync(CancellationToken.None).ConfigureAwait(false);
+    }
 
-        string draft = Path.Combine(Path.GetDirectoryName(path)!, $".pinkrooster-{Guid.NewGuid():N}.tmp");
-        FileStreamOptions options = new() { Mode = FileMode.CreateNew, Access = FileAccess.Write, Share = FileShare.None, Options = FileOptions.Asynchronous };
-        if (!OperatingSystem.IsWindows())
+    // The byte order mark the encoding asks for, then the text, a block at a time so a cancellation is seen during a long encoding.
+    private static byte[] Encode(string content, Encoding encoding, CancellationToken cancellationToken)
+    {
+        const int BlockCharacters = 4096;
+        Encoder encoder = encoding.GetEncoder();
+        byte[] block = new byte[encoding.GetMaxByteCount(BlockCharacters)];
+        using MemoryStream buffer = new();
+        buffer.Write(encoding.GetPreamble());
+        ReadOnlySpan<char> rest = content;
+        bool completed;
+        do
         {
-            options.UnixCreateMode = File.GetUnixFileMode(path);
-        }
-        try
-        {
-            await using (FileStream stream = new(draft, options))
-            await using (StreamWriter writer = new(stream, encoding))
-            {
-                await writer.WriteAsync(content.AsMemory(), cancellationToken).ConfigureAwait(false);
-                await writer.FlushAsync(cancellationToken).ConfigureAwait(false);
-            }
-            if (!OperatingSystem.IsWindows())
-            {
-                // UnixCreateMode is filtered by umask; keep the original mode exactly, including executable bits.
-                File.SetUnixFileMode(draft, options.UnixCreateMode!.Value);
-            }
             cancellationToken.ThrowIfCancellationRequested();
-            // A sibling is on the same volume. Replace also keeps the destination's ACL on Windows.
-            File.Replace(draft, path, destinationBackupFileName: null);
+            int take = Math.Min(rest.Length, BlockCharacters);
+            encoder.Convert(rest[..take], block, flush: take == rest.Length, out int used, out int written, out completed);
+            buffer.Write(block, 0, written);
+            rest = rest[used..];
+            cancellationToken.ThrowIfCancellationRequested();
         }
-        finally
-        {
-            File.Delete(draft);
-        }
+        while (rest.Length > 0 || !completed);
+        return buffer.ToArray();
     }
 
     /// <summary>True when a NUL byte is in the first block, which marks a binary file before any of it is decoded.</summary>

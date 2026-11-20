@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- File edits and overwrites rewrite the file in place after encoding the whole replacement, so the file keeps its owner and hard links, a file in a folder the agent cannot write to can be changed, and no draft file is left beside it. Cancellation and encoding failures still leave the original intact.
+- Two undo calls on one session run one at a time, so they take back two messages instead of the same one twice.
+- A cancelled shell call removes its partial output file.
+- An event handler that throws when a background task ends no longer keeps the model from being told.
+- A failed agent build also disposes the collections named with `[AgentTools]`, disposes every collection even when one throws, and reports a disposal error together with the build error instead of in its place.
+- `Configure` runs on the calling thread again when a member that cannot await triggers the build.
+
 ## 0.4.1-preview
 
 - MCP server annotations no longer assign trusted tool kinds. Hosts can assign a kind explicitly with `WithKind` to tools they trust.

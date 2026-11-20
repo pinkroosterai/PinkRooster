@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Agents.AI;
@@ -19,6 +20,9 @@ public sealed class FileOperationsToolCollection : FileReadToolCollection
     private static readonly TimeSpan MaxBackupAge = TimeSpan.FromDays(7);
 
     private readonly bool keepBackups;
+
+    // One undo at a time per session, so two quick calls take back two units instead of both working through the same one.
+    private readonly ConditionalWeakTable<AgentSession, SemaphoreSlim> undoGates = new();
 
     /// <summary>Creates a file collection sandboxed to the workspace's root directory, with the default read limit and no backups.</summary>
     /// <remarks>For another read limit or for backups use <see cref="FileOperationsToolCollectionBuilder"/>.</remarks>
@@ -383,6 +387,20 @@ public sealed class FileOperationsToolCollection : FileReadToolCollection
                 "Undo needs the backups this collection was built without. Build it with new FileOperationsToolCollectionBuilder().InWorkspace(workspace).KeepBackups().Build().");
         }
 
+        SemaphoreSlim gate = undoGates.GetValue(session, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            return await UndoUnitAsync(session, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            gate.Release();
+        }
+    }
+
+    private async Task<FileUndoResult> UndoUnitAsync(AgentSession session, CancellationToken cancellationToken)
+    {
         List<FileChange> unit;
         lock (session.StateBag)
         {

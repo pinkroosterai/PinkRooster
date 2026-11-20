@@ -174,6 +174,25 @@ public sealed class FileUndoTests : IDisposable
     }
 
     [Fact]
+    public async Task TwoUndosAtOnce_TakeBackTwoMessages_InsteadOfTheSameOneTwice()
+    {
+        Write("a.txt", "zero\n");
+        FileOperationsToolCollection files = Collection();
+        AIAgent agent = Agent(files, Edit("a.txt", "zero", "one"), Done(), Edit("a.txt", "one", "two"), Edit("a.txt", "two", "three"), Done());
+        AgentSession session = await agent.CreateSessionAsync(TestContext.Current.CancellationToken);
+        await SendAsync(agent, files, session);
+        await SendAsync(agent, files, session);
+
+        FileUndoResult[] results = await Task.WhenAll(
+            files.UndoAsync(session, TestContext.Current.CancellationToken),
+            files.UndoAsync(session, TestContext.Current.CancellationToken));
+
+        Assert.All(results, result => Assert.Empty(result.Skipped));
+        Assert.All(results, result => Assert.Single(result.Restored));
+        Assert.Equal("zero\n", File.ReadAllText(PathOf("a.txt")));
+    }
+
+    [Fact]
     public async Task AFileSomeoneElseChangedSince_IsSkippedAndNamed_AndTheOthersAreRestored()
     {
         Write("mine.txt", "before\n");
