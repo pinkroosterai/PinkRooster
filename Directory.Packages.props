@@ -7,7 +7,7 @@
          PinkRooster.Agents.csproj repeats this version as the lower bound of its VersionOverride range; change both together. -->
     <PackageVersion Include="Microsoft.Agents.AI" Version="1.24.0" />
     <PackageVersion Include="Microsoft.Agents.AI.Harness" Version="1.24.0" />
-    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.24.0" />
+    <PackageVersion Include="Microsoft.Agents.AI.Workflows" Version="1.25.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
     <PackageVersion Include="Microsoft.Extensions.AI" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.AI.Abstractions" Version="10.10.1" />
